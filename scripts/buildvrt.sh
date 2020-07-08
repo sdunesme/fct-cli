@@ -14,6 +14,8 @@ find 10K -name "AXIS_DISTANCE_*.tif" | xargs gdalbuildvrt -a_srs EPSG:2154 AXIS_
 find 10K -name "DGO_*.tif" | xargs gdalbuildvrt -a_srs EPSG:2154 DGO.vrt
 find 10K -name "NEAREST_HEIGHT_*.tif" | xargs gdalbuildvrt -a_srs EPSG:2154 NEAREST_HEIGHT.vrt
 find 10K -name "NEAREST_DISTANCE_*.tif" | xargs gdalbuildvrt -a_srs EPSG:2154 NEAREST_DISTANCE.vrt
+find 10K -name "VALLEY_BOTTOM_*.tif" | xargs gdalbuildvrt -a_srs EPSG:2154 VALLEY_BOTTOM.vrt
+find 10K -name "VALLEY_DISTANCE_*.tif" | xargs gdalbuildvrt -a_srs EPSG:2154 VALLEY_DISTANCE.vrt
 
 find 10K -name "LANDCOVER_CONTINUITY_*.tif" | xargs gdalbuildvrt -a_srs EPSG:2154 LANDCOVER_CONTINUITY.vrt
 
