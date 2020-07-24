@@ -8,6 +8,11 @@ function mkvrt {
         xargs gdalbuildvrt -a_srs EPSG:2154 $PREFIX.vrt
 }
 
+function translate {
+    VRT=$1
+    gdal_translate -of gtiff -co TILED=YES -co COMPRESS=DEFLATE $VRT $(basename $VRT .vrt).tif
+}
+
 # Copies from regional processing
 
 mkvrt 10K RGE5M

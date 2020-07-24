@@ -109,7 +109,7 @@ def Plots(data, variant):
         fig,
         ax,
         title='Total Landcover Width',
-        filename=config.filename('pdf_ax_lancover_profile', axis=axis, variant=variant))
+        filename=config.filename('pdf_ax_landcover_profile', axis=axis, variant=variant))
 
     fig, ax = SetupPlot()
     PlotLeftRightContinuityProfile(
