@@ -39,7 +39,7 @@ axis = 3
 processes = 5
 
 SwathProfiles(axis, processes=processes)
-LandCoverSwath(axis, processes=processes, landcover='landcover-bdt', subset='BDT_TOTAL')
+LandCoverSwath(axis, processes=processes, landcover='landcover-bdt', subset='TOTAL_BDT')
 LandCoverSwath(axis, processes=processes, landcover='ax_continuity_variant', variant='CESBIO', subset='CONT_CESBIO')
 LandCoverSwath(axis, processes=processes, landcover='ax_continuity_variant', variant='BDT', subset='CONT_BDT')
 LandCoverSwath(axis, processes=processes, landcover='ax_continuity_variant', variant='BDT_NOINFRA', subset='CONT_NOINFRA')
@@ -50,7 +50,7 @@ WriteCorridorWidth(axis, width)
 def LandCoverWidth(subset):
     
     data = LandCoverTotalWidth(axis, subset=subset)
-    WriteLandCoverWidth(axis, data, output='ax_metrics_lcw_variant', variant=subset)
+    WriteLandCoverWidth(axis, data, output='metrics_lcw_variant', variant=subset)
     return data
 
 def ShowLandCoverProfile(data):
@@ -129,8 +129,8 @@ def Plots(data, variant):
 
 mpl.use('cairo')
 
-data = LandCoverWidth('BDT_TOTAL')
-Plots(data, variant='BDT_TOTAL')
+data = LandCoverWidth('TOTAL_BDT')
+Plots(data, variant='TOTAL_BDT')
 
 data = LandCoverWidth('CONT_CESBIO')
 Plots(data, variant='CONT_CESBIO')
