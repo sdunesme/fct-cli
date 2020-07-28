@@ -22,7 +22,8 @@ from fct.metrics.CorridorWidth import (
     WriteCorridorWidth
 )
 from fct.metrics.LandCoverWidth import (
-    LandCoverTotalWidth,
+    DatasetParameter,
+    LandCoverWidth as _LandCoverWidth,
     WriteLandCoverWidth
 )
 from fct.plotting.PlotCorridor import (
@@ -47,9 +48,15 @@ LandCoverSwath(axis, processes=processes, landcover='ax_continuity_variant', var
 width = CorridorWidth(axis)
 WriteCorridorWidth(axis, width)
 
-def LandCoverWidth(subset):
+def LandCoverWidth(subset, method, landcover, **kwargs):
+
+    datasets = DatasetParameter(
+        landcover=landcover,
+        swath_features='ax_swath_features',
+        swath_data='ax_swath_landcover'
+    )
     
-    data = LandCoverTotalWidth(axis, subset=subset)
+    data = _LandCoverWidth(axis, method, datasets, subset=subset, **kwargs)
     WriteLandCoverWidth(axis, data, output='metrics_lcw_variant', variant=subset)
     return data
 
@@ -127,16 +134,52 @@ def Plots(data, variant):
         title='Left and Right Banks Landcover Width',
         filename=config.filename('pdf_ax_leftright_profile', axis=axis, variant=variant))
 
-mpl.use('cairo')
+# mpl.use('cairo')
 
-data = LandCoverWidth('TOTAL_BDT')
-Plots(data, variant='TOTAL_BDT')
+# data = LandCoverWidth('TOTAL_BDT', 'total landcover width')
+# Plots(data, variant='TOTAL_BDT')
 
-data = LandCoverWidth('CONT_CESBIO')
-Plots(data, variant='CONT_CESBIO')
+# data = LandCoverWidth('CONT_CESBIO', 'continuous buffer width from river channel')
+# Plots(data, variant='CONT_CESBIO')
 
-data = LandCoverWidth('CONT_BDT')
-Plots(data, variant='CONT_BDT')
+# data = LandCoverWidth('CONT_BDT', 'continuous buffer width from river channel')
+# Plots(data, variant='CONT_BDT')
 
-data = LandCoverWidth('CONT_NOINFRA')
-Plots(data, variant='CONT_NOINFRA')
+# data = LandCoverWidth('CONT_NOINFRA', 'continuous buffer width from river channel')
+# Plots(data, variant='CONT_NOINFRA')
+
+LandCoverWidth(
+    'TOTAL_BDT',
+    'total landcover width',
+    landcover='landcover-bdt')
+
+LandCoverWidth(
+    'CONT_CESBIO',
+    'continuous buffer width from river channel',
+    landcover='ax_continuity_variant',
+    variant='CESBIO')
+
+LandCoverWidth(
+    'CONT_BDT',
+    'continuous buffer width from river channel',
+    landcover='ax_continuity_variant',
+    variant='BDT')
+
+LandCoverWidth(
+    'CONT_NOINFRA',
+    'continuous buffer width from river channel',
+    landcover='ax_continuity_variant',
+    variant='BDT_NOINFRA')
+
+from fct.config import config
+from fct.metrics.WatershedMetrics import (
+    WatershedMetrics,
+    WriteWatershedMetrics
+)
+
+config.default()
+axis = 3
+
+dataset = WatershedMetrics(axis, processes=5)
+print(dataset)
+WriteWatershedMetrics(axis, dataset)
