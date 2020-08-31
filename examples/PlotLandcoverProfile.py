@@ -52,12 +52,12 @@ def LandCoverWidth(subset, method, landcover, **kwargs):
 
     datasets = DatasetParameter(
         landcover=landcover,
-        swath_features='ax_swath_features',
+        swath_features='ax_swath_polygons',
         swath_data='ax_swath_landcover'
     )
     
     data = _LandCoverWidth(axis, method, datasets, subset=subset, **kwargs)
-    WriteLandCoverWidth(axis, data, output='metrics_lcw_variant', variant=subset)
+    # WriteLandCoverWidth(axis, data, output='metrics_lcw_variant', variant=subset)
     return data
 
 def ShowLandCoverProfile(data):
@@ -93,6 +93,7 @@ def ShowLeftRightContinuityProfile(data):
         window=5)
     SetupMeasureAxis(ax, merged['measure'])
     ax.set_ylabel('Width (m)')
+    ax.legend(ncol=2)
     FinalizePlot(
         fig,
         ax,
@@ -128,6 +129,7 @@ def Plots(data, variant):
         window=5)
     SetupMeasureAxis(ax, merged['measure'])
     ax.set_ylabel('Width (m)')
+    ax.legend(ncol=2)
     FinalizePlot(
         fig,
         ax,
@@ -136,16 +138,16 @@ def Plots(data, variant):
 
 # mpl.use('cairo')
 
-# data = LandCoverWidth('TOTAL_BDT', 'total landcover width')
+# data = LandCoverWidth('TOTAL_BDT', 'total landcover width', landcover='landcover-bdt')
 # Plots(data, variant='TOTAL_BDT')
 
 # data = LandCoverWidth('CONT_CESBIO', 'continuous buffer width from river channel')
 # Plots(data, variant='CONT_CESBIO')
 
-# data = LandCoverWidth('CONT_BDT', 'continuous buffer width from river channel')
+# data = LandCoverWidth('CONT_BDT', 'continuous buffer width from river channel', landcover='ax_continuity_variant', variant='BDT')
 # Plots(data, variant='CONT_BDT')
 
-# data = LandCoverWidth('CONT_NOINFRA', 'continuous buffer width from river channel')
+# data = LandCoverWidth('CONT_NOINFRA', 'continuous buffer width from river channel', landcover='ax_continuity_variant', variant='BDT_NOINFRA')
 # Plots(data, variant='CONT_NOINFRA')
 
 LandCoverWidth(

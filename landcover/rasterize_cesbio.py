@@ -128,6 +128,11 @@ def gravels(**kwargs):
     return query % kwargs
 
 def RasterizeLandCoverTile(tile):
+    """
+    Enrich medium-resolution landcover data (CESBIO)
+    with high-resolution data from topographic database (BD Topo)
+    for class 'Water Channel' (0) and 'Gravel Bars' (1)
+    """
 
     rasterfile = config.tileset().tilename(
         'landcover-cesbio',
@@ -141,6 +146,9 @@ def RasterizeLandCoverTile(tile):
         profile.update(compress='deflate')
         transform = ds.transform
 
+    # reclass unprecise CESBIO water to natural/open vegetation
+    # precise water and gravel bars are going
+    # to be extracted from BD Topo
     data[data == 0] = 2
 
     layers = [
