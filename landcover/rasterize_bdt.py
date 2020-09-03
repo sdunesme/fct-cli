@@ -29,6 +29,7 @@ import fiona
 
 from fct.config import config
 from fct.cli.Decorators import starcall
+from fct.cli import overwritable
 from fct.tileio import as_window
 from fct import __version__ as version
 
@@ -516,9 +517,10 @@ def RasterizeBDTopoLayer(data, tile, transform, layer):
     except RuntimeError:
         pass
 
-def RasterizeLandCoverTile(tile, **kwargs):
-
-    # config.default()
+def RasterizeLandCoverTile(tile, overwrite=False, **kwargs):
+    """
+    Calculate one tile of landcover data from BD Topo and RPG
+    """
 
     template_raster = config.datasource('dem').filename
 
@@ -526,6 +528,9 @@ def RasterizeLandCoverTile(tile, **kwargs):
         'landcover-bdt',
         row=tile.row,
         col=tile.col)
+
+    if os.path.exists(output) and not overwrite:
+        return
 
     with rio.open(template_raster) as template:
 
@@ -593,7 +598,8 @@ def RasterizeLandCover(processes=1, **kwargs):
 
 @click.command()
 @click.option('--processes', '-j', default=1, help="Execute j parallel processes")
-def cli(processes):
+@overwritable
+def cli(processes, overwrite):
     """
     Calculate landcover raster layer
     """
@@ -608,7 +614,7 @@ def cli(processes):
     if processes > 1:
         click.secho('Run %d parallel processes' % processes, fg='yellow')
 
-    RasterizeLandCover(processes)
+    RasterizeLandCover(processes, overwrite=overwrite)
 
 if __name__ == '__main__':
     cli()
