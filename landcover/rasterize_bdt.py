@@ -596,6 +596,69 @@ def RasterizeLandCover(processes=1, **kwargs):
             for _ in iterator:
                 pass
 
+def CropOutSeaMaskTile(tile, **kwargs):
+
+    seamask_file = os.path.join(config.workdir, 'AUX', 'MASQUE_MER.shp')
+
+    output = config.tileset().tilename(
+        'landcover-bdt',
+        row=tile.row,
+        col=tile.col)
+
+    def shapes():
+        """
+        Generate Landcover Polygons
+        """
+
+        with fiona.open(seamask_file) as fs:
+
+            if len(fs) == 0:
+                return
+
+            for feature in fs:
+                yield feature['geometry'], 1
+
+    with rio.open(output) as ds:
+        data = ds.read(1)
+        profile = ds.profile.copy()
+        transform = ds.transform
+
+    try:
+        mask = np.zeros_like(data, dtype='uint8')
+        features.rasterize(shapes(), out=mask, transform=transform)
+    except RuntimeError:
+        pass
+
+    data[mask == 1] = ds.nodata
+
+    profile.update(
+        compress='deflate'
+    )
+
+    with rio.open(output, 'w', **profile) as dst:
+        dst.write(data, 1)
+
+def CropOutSeaMask(processes=1, **kwargs):
+
+    tileset = config.tileset()
+
+    def arguments():
+
+        for tile in tileset.tiles():
+            yield (
+                CropOutSeaMaskTile,
+                tile,
+                kwargs
+            )
+
+    with Pool(processes=processes, initializer=setup) as pool:
+
+        pooled = pool.imap_unordered(starcall, arguments())
+
+        with click.progressbar(pooled, length=len(tileset)) as iterator:
+            for _ in iterator:
+                pass
+
 @click.command()
 @click.option('--processes', '-j', default=1, help="Execute j parallel processes")
 @overwritable
