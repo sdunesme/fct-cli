@@ -1,7 +1,7 @@
 from fct.config import config
 config.default()
 
-from fct.corridor.LateralContinuity import LateralContinuity
+from fct.continuity.LateralContinuity import LateralContinuity
 from fct.corridor.HeightAboveNearestDrainage import HeightAboveNearestDrainage, HeightAboveTalweg
 
 axis = 3
@@ -15,8 +15,8 @@ buildvrt('landcover', 'ax_talweg_distance', axis=axis)
 from fct.config import config
 config.default()
 
-from fct.corridor.LandCoverSwath import LandCoverSwath
-from fct.corridor.SwathProfile import SwathProfiles
+from fct.swath.LandCoverSwathProfile import LandCoverSwath
+from fct.swath.ElevationSwathProfile import SwathProfiles
 from fct.metrics.CorridorWidth import (
     CorridorWidth,
     WriteCorridorWidth
