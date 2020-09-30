@@ -394,7 +394,7 @@ def drainage_raster():
 
     return tileindex()
 
-@cli.command('watershed')
+@cli.command('axis-watershed')
 @arg_axis
 @click.option('--processes', '-j', default=1)
 def delineate_watershed(axis, processes):
