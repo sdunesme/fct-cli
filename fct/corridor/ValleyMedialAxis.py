@@ -170,16 +170,16 @@ def ValleyMedialAxis(axis, processes=1, **kwargs):
 
     defs = xr.open_dataset(swath_defs)
     defs.load()
-    defs = defs.sortby('coordm')
+    defs = defs.sortby('measure')
 
-    length = defs['label'].shape[0]
+    length = defs['swath'].shape[0]
 
     def arguments():
 
         for k in range(length):
 
-            coordm = defs['coordm'].values[k]
-            swid = defs['label'].values[k]
+            coordm = defs['measure'].values[k]
+            swid = defs['swath'].values[k]
             bounds = tuple(defs['bounds'].values[k, :])
 
             # if gid < 314:

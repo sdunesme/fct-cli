@@ -49,14 +49,14 @@ def ExportValleyProfile(axis, valley_profile, destination):
             'x': ('measure', valley_profile[:, 1]),
             'y': ('measure', valley_profile[:, 2]),
             'z': ('measure', valley_profile[:, 3]),
-            'valley_slope': ('measure', valley_profile[:, 4])
+            'slope': ('measure', valley_profile[:, 4])
         },
         coords={
             'axis': axis,
             'measure': valley_profile[:, 0]
         })
 
-    set_metadata(dataset, 'elevation_profile_floodplain')
+    set_metadata(dataset, 'profile_elevation_floodplain')
 
     dataset.to_netcdf(
         destination,
@@ -81,12 +81,12 @@ def ValleySwathElevation(axis):
 
     defs = xr.open_dataset(swath_defs)
     defs.load()
-    defs = defs.sortby('coordm')
+    defs = defs.sortby('measure')
 
     swids = list()
     values = list()
 
-    with click.progressbar(defs['label'].values) as iterator:
+    with click.progressbar(defs['swath'].values) as iterator:
         for gid in iterator:
 
             filename = config.filename('ax_swath_elevation_npz', axis=axis, gid=gid)
@@ -99,7 +99,7 @@ def ValleySwathElevation(axis):
 
                 if not (np.isnan(z0) or np.isnan(slope)):
 
-                    coordm = defs['coordm'].sel(label=gid).values
+                    coordm = defs['measure'].sel(swath=gid).values
                     zvalley = slope*coordm + z0
 
                     swids.append(gid)

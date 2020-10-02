@@ -36,7 +36,7 @@ def ValleyMaskTile(axis, row, col, threshold):
     def _tilename(name):
         return tileset.tilename(name, axis=axis, row=row, col=col)
 
-    datafile = config.filename('metrics_talweg_height', axis=axis)
+    datafile = config.filename('metrics_talweg', axis=axis)
     hand_raster = _tilename('ax_nearest_height')
     swath_raster = _tilename('ax_valley_swaths')
     output_mask = _tilename('ax_valley_mask_refined')

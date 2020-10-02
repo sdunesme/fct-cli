@@ -322,7 +322,7 @@ def ExportLandcoverSwathsToNetCDF(axis, **kwargs):
     swath_bounds = config.filename('ax_valley_swaths_bounds', axis=axis)
 
     defs = xr.open_dataset(swath_bounds)
-    defs = defs.load().sortby('coordm')
+    defs = defs.load().sortby('measure')
     length = defs['swath'].shape[0]
     nclasses = 9
 
