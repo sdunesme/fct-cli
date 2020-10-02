@@ -16,7 +16,7 @@ ax_valley_swaths:
 
 ax_valley_swaths_polygons:
   description: |
-    Valleu bottom longitudinal units
+    Valley bottom longitudinal units
   type: polygon
   group: reference
   status: final
@@ -162,3 +162,67 @@ ax_swath_polygons:
   status: temporary
   subdir: AXES/AX%(axis)04d/REF
   filename: DGO.shp
+
+ax_swath_polygons_vb_simplified:
+  description: |
+    Valley bottom (floodplain) longitudinal units,
+    simplified and smoothed for display
+  type: polygon
+  group: reference
+  status: final
+  subdir: AXES/AX%(axis)04d/REF
+  filename: VALLEY_SWATHS_SIMPL.shp
+
+ax_swath_elevation_npz:
+  description: |
+    Elevation swath
+  type: npz
+  group: metrics
+  status: temporary
+  subdir: AXES/AX%(axis)04d/SWATH/ELEVATION
+  filename: SWATH_ELEVATION_%(gid)04d.npz
+
+ax_swath_landcover_npz:
+  description: |
+    Landcover swath
+  type: npz
+  group: metrics
+  status: temporary
+  subdir: AXES/AX%(axis)04d/SWATH/LANDCOVER
+  filename: SWATH_LANDCOVER_%(gid)04d_%(subset)s.npz
+
+ax_swath_valleybottom_npz:
+  description: |
+    Landcover swath
+  type: npz
+  group: metrics
+  status: temporary
+  subdir: AXES/AX%(axis)04d/SWATH/VALLEYBOTTOM
+  filename: SWATH_VALLEYBOTTOM_%(gid)04d.npz
+
+swath_elevation:
+  description: |
+    Elevation swath profiles (netCDF archive)
+  type: netcdf
+  group: metrics
+  status: final
+  subdir: AXES/AX%(axis)04d/METRICS
+  filename: ELEVATION_SWATH_PROFILES.nc
+
+swath_landcover:
+  description: |
+    LandCover swath profiles (netCDF archive)
+  type: netcdf
+  group: metrics
+  status: final
+  subdir: AXES/AX%(axis)04d/METRICS
+  filename: LANDCOVER_SWATH_PROFILES_%(subset)s.nc
+
+swath_valleybottom:
+  description: |
+    Valleybottom swath profiles (netCDF archive)
+  type: netcdf
+  group: metrics
+  status: final
+  subdir: AXES/AX%(axis)04d/METRICS
+  filename: VALLEYBOTTOM_SWATH_PROFILES.nc
