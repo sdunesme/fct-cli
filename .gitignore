@@ -13,3 +13,5 @@ python3
 build
 __pycache__
 .DS_Store
+py3env
+.vscode
