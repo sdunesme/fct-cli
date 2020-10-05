@@ -25,10 +25,11 @@ from ..cli import starcall
 from ..config import config
 from ..tileio import as_window
 
-def MkLandCoverTile(tile):
+def MkLandCoverTile(tile, landcoverset='landcover-cesbio'):
 
     template_raster = config.datasource('dem').filename
     landcover_raster = config.datasource('landcover').filename
+    landcover_idx = config.datasource('landcover').idx
     mapping_file = config.datasource('landcover-mapping').filename
 
     headers = None
@@ -56,9 +57,10 @@ def MkLandCoverTile(tile):
         return out
 
     output = config.tileset().tilename(
-        'landcover-cesbio',
+        landcoverset,
         row=tile.row,
-        col=tile.col)
+        col=tile.col,
+        idx=landcover_idx)
 
     with rio.open(template_raster) as template:
 
@@ -90,6 +92,7 @@ def MkLandCoverTile(tile):
             data = reclass(data, ds.nodata, 255)
 
             profile.update(
+                driver='GTiff',
                 height=height,
                 width=width,
                 nodata=255,

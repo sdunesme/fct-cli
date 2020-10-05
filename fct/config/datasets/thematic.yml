@@ -47,6 +47,18 @@ landcover-bdt:
     template: LANDCOVER_BDT_2019_%(row)02d_%(col)02d
     extension: .tif
 
+landcover-hmvt:
+  description: |
+    LandCover Tiles from HMVT,
+    derived from historcial topographic maps
+  type: raster
+  subdir: GLOBAL/HMVT
+  filename: LANDCOVER_HMVT_%(idx)s.vrt
+  tiles:
+    tileset: landcover
+    template: LANDCOVER_HMVT_%(idx)s_%(row)02d_%(col)02d
+    extension: .tif
+
 landcover-separate:
   description: |
     Land cover classe into separate contingency bands,

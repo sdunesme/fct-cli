@@ -15,6 +15,7 @@ Configuration Classes
 
 import os
 import glob
+import re
 from collections import namedtuple
 from configparser import ConfigParser
 from base64 import urlsafe_b64encode
@@ -25,7 +26,7 @@ from shapely.geometry import asShape
 import fiona
 
 Tile = namedtuple('Tile', ('gid', 'row', 'col', 'x0', 'y0', 'bounds', 'tileset'))
-DataSource = namedtuple('DataSource', ('name', 'filename', 'resolution'))
+DataSource = namedtuple('DataSource', ('name', 'filename', 'resolution', 'idx'))
 
 def strip(s):
     # return re.sub(' {2,}', ' ', s.strip())
@@ -615,6 +616,14 @@ class FileParser():
                 item_type = items['type']
                 if item_type == 'datasource':
                     datasources[section] = FileParser.datasource(section, items)
+
+                elif item_type == 'multidatasource':
+                    for ds in glob.glob(items.get('filenames')):
+                        section = os.path.splitext(os.path.basename(ds))[0]
+                        items['filename'] = ds
+                        items['idx'] = re.search(items.get('template'), ds).group(1)
+                        datasources[section] = FileParser.datasource(section, items)
+
                 elif item_type == 'tileset':
                     tilesets[section] = FileParser.tileset(section, items)
 
@@ -659,7 +668,9 @@ class FileParser():
 
         filename = items.get('filename', None)
         resolution = float(items.get('resolution', 0.0))
-        return DataSource(name, filename, resolution)
+        idx = items.get('idx', None)
+
+        return DataSource(name, filename, resolution, idx)
 
     @staticmethod
     def tileset(name, items):

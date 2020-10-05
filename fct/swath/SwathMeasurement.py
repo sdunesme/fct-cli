@@ -171,6 +171,23 @@ def ValleyMedialAxisParameters():
         mdelta=200.0
     )
 
+def ValleyTalwegParameters():
+    """
+    Parameter set for extended corridor longitudinal disaggregation
+    """
+
+    return dict(
+        ax_mask='ax_valley_mask',
+        ax_reference='ax_talweg',
+        ax_talweg_distance='ax_nearest_distance',
+        output_distance='ax_talweg_distance',
+        output_measure='ax_talweg_measure',
+        output_swaths_raster='ax_valley_swaths',
+        output_swaths_shapefile='ax_valley_swaths_polygons',
+        output_swaths_bounds='ax_valley_swaths_bounds',
+        mdelta=200.0
+    )
+
 def ExtendedCorridorParameters():
     """
     Parameter set for extended corridor longitudinal disaggregation

@@ -28,8 +28,9 @@ def cli(env):
 @arg_axis
 @click.option('--length', default=200.0, help='unit length / disaggregation step')
 @click.option('--medialaxis', default=False, help='use medial axis for reference')
+@click.option('--talweg', default=False, help='use talweg for reference')
 @parallel_opt
-def discretize(axis, length, medialaxis, processes):
+def discretize(axis, length, medialaxis, talweg, processes):
     """
     Disaggregate valley bottom (from nearest height raster)
     into longitudinal units
@@ -39,19 +40,26 @@ def discretize(axis, length, medialaxis, processes):
         DisaggregateIntoSwaths,
         ValleyBottomParameters,
         ValleyMedialAxisParameters,
+        ValleyTalwegParameters,
         WriteSwathsBounds,
         VectorizeSwathPolygons
     )
+
+    parameters = ValleyBottomParameters()
+    parameters.update(mdelta=length, ax_tiles='ax_shortest_tiles')
 
     if medialaxis:
 
         parameters = ValleyMedialAxisParameters()
         parameters.update(mdelta=length, ax_tiles='ax_shortest_tiles')
 
-    else:
+    if talweg:
 
-        parameters = ValleyBottomParameters()
+        parameters = ValleyTalwegParameters()
         parameters.update(mdelta=length, ax_tiles='ax_shortest_tiles')
+
+
+        
 
     click.secho('Disaggregate valley bottom', fg='cyan')
     swaths = DisaggregateIntoSwaths(
@@ -64,6 +72,10 @@ def discretize(axis, length, medialaxis, processes):
     buildvrt('default', 'ax_valley_swaths', axis=axis)
     buildvrt('default', 'ax_axis_measure', axis=axis)
     buildvrt('default', 'ax_axis_distance', axis=axis)
+
+    if talweg:
+        buildvrt('default', 'ax_talweg_measure', axis=axis)
+        buildvrt('default', 'ax_talweg_distance', axis=axis)
 
     click.secho('Vectorize swath polygons', fg='cyan')
     VectorizeSwathPolygons(
@@ -242,8 +254,9 @@ def export_valleybottom_to_netcdf(axis):
 
 @fct_command(cli, 'landcover swath profiles', name='landcover')
 @arg_axis
+@click.option('--landcoverset', '-lc', default='landcover-bdt', help='landcover dataset')
 @parallel_opt
-def landcover_swath(axis, processes):
+def landcover_swath(axis, ds, processes):
     """
     Calculate landcover swaths
     """
@@ -253,16 +266,16 @@ def landcover_swath(axis, processes):
     LandCoverSwathProfile(
         axis,
         processes=processes,
-        landcover='landcover-bdt',
+        landcover=landcoverset,
         valley_bottom_mask='ax_valley_mask_refined',
         subset='TOTAL_BDT')
 
-    LandCoverSwathProfile(
-        axis,
-        processes=processes,
-        # landcover='ax_corridor_mask',
-        landcover='ax_continuity',
-        subset='CONT_BDT')
+    # LandCoverSwathProfile(
+    #     axis,
+    #     processes=processes,
+    #     # landcover='ax_corridor_mask',
+    #     landcover='ax_continuity',
+    #     subset='CONT_BDT')
 
 @fct_command(cli, 'export landcover swath profiles to netcdf', name='export-landcover')
 @arg_axis

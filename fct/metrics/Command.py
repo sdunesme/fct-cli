@@ -41,17 +41,18 @@ def cli(env):
 
 @fct_command(cli)
 @click.option('--processes', '-j', default=1, help="Execute j parallel processes")
-def data_landcover(processes=1):
+@click.option('--landcoverset', '-lc', default='landcover-cesbio', help='landcover dataset')
+def data_landcover(processes=1, landcoverset='landcover-cesbio'):
     """
     Reclass landcover data and create landcover tiles
     """
 
-    MkLandCoverTiles(processes)
+    MkLandCoverTiles(processes, landcoverset=landcoverset)
 
 @fct_command(cli)
 @click.argument('variable')
 @click.argument('destination')
-@click.option('--landcoverset', '-lc', default='landcover-bdt')
+@click.option('--landcoverset', '-lc', default='landcover-bdt', help='landcover dataset')
 @click.option('--processes', '-j', default=1, help="Execute j parallel processes")
 def data_population(variable, destination, landcoverset, processes=1):
     """
