@@ -338,7 +338,7 @@ def SwathProfiles(axis, processes=1):
 
         defs = xr.open_dataset(swath_bounds)
         defs.load()
-        defs = defs.sortby('coordm')
+        defs = defs.sortby('measure')
 
         length = defs['swath'].shape[0]
 
@@ -403,7 +403,7 @@ def ExportElevationSwathsToNetCDF(axis):
     swath_bounds = config.filename('ax_valley_swaths_bounds', axis=axis)
 
     defs = xr.open_dataset(swath_bounds)
-    defs = defs.load().sortby('coordm')
+    defs = defs.load().sortby('measure')
     length = defs['swath'].shape[0]
 
     swids = np.zeros(length, dtype='uint32')
