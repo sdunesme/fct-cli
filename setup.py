@@ -82,6 +82,7 @@ setup(
             fct-swath=fct.swath.Command:cli
             fct-metrics=fct.metrics.Command:cli
             fct-plot=fct.plotting.Command:cli
+            fct-historical=fct.historical.Command:cli
     ''',
     classifiers=[
         'Development Status :: 4 - Beta',

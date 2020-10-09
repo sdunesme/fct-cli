@@ -53,10 +53,11 @@ landcover-hmvt:
     derived from historcial topographic maps
   type: raster
   subdir: GLOBAL/HMVT
-  filename: LANDCOVER_HMVT_%(idx)s.vrt
+  filename: LANDCOVER_HMVT_%(idx).vrt
+  multitemporal: True
   tiles:
     tileset: landcover
-    template: LANDCOVER_HMVT_%(idx)s_%(row)02d_%(col)02d
+    template: LANDCOVER_HMVT_%(idx)_%(row)02d_%(col)02d
     extension: .tif
 
 landcover-separate:

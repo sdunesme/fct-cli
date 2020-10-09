@@ -25,11 +25,16 @@ from ..cli import starcall
 from ..config import config
 from ..tileio import as_window
 
-def MkLandCoverTile(tile, landcoverset='landcover-cesbio'):
+def MkLandCoverTile(tile, landcoverset='landcover-cesbio', ds=None):
+
+    if ds:
+        landcover_raster = config.datasource(ds).filename
+        landcover_idx = config.datasource(ds).idx
+    else:
+        landcover_raster = config.datasource('landcover').filename
+        landcover_idx = None
 
     template_raster = config.datasource('dem').filename
-    landcover_raster = config.datasource('landcover').filename
-    landcover_idx = config.datasource('landcover').idx
     mapping_file = config.datasource('landcover-mapping').filename
 
     headers = None

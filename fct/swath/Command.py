@@ -256,7 +256,7 @@ def export_valleybottom_to_netcdf(axis):
 @arg_axis
 @click.option('--landcoverset', '-lc', default='landcover-bdt', help='landcover dataset')
 @parallel_opt
-def landcover_swath(axis, ds, processes):
+def landcover_swath(axis, landcoverset, processes):
     """
     Calculate landcover swaths
     """
