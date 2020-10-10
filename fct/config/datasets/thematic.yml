@@ -6,6 +6,7 @@ landcover-default:
   type: raster
   subdir: GLOBAL/LANDCOVER
   filename: LANDCOVER_2018.vrt
+  multitemporal: False
   tiles:
     tileset: landcover
     template: LANDCOVER_%(row)02d_%(col)02d
@@ -18,6 +19,7 @@ landcover-cesbio:
   type: raster
   subdir: GLOBAL/CESBIO
   filename: LANDCOVER_CESBIO_2018.vrt
+  multitemporal: False
   tiles:
     tileset: landcover
     template: LANDCOVER_CESBIO_2018_%(row)02d_%(col)02d
@@ -30,6 +32,7 @@ landcover-gpk:
   type: raster
   subdir: GLOBAL/GEOPEKA
   filename: LANDCOVER_GEOPEKA_2019.vrt
+  multitemporal: False
   tiles:
     tileset: landcover
     template: LANDCOVER_GEOPEKA_2019_%(row)02d_%(col)02d
@@ -42,6 +45,7 @@ landcover-bdt:
   type: raster
   subdir: GLOBAL/BDTOPO
   filename: LANDCOVER_BDT_2019.vrt
+  multitemporal: False
   tiles:
     tileset: landcover
     template: LANDCOVER_BDT_2019_%(row)02d_%(col)02d
@@ -53,11 +57,11 @@ landcover-hmvt:
     derived from historcial topographic maps
   type: raster
   subdir: GLOBAL/HMVT
-  filename: LANDCOVER_HMVT_%(idx).vrt
+  filename: LANDCOVER_HMVT_%(idx)s.vrt
   multitemporal: True
   tiles:
     tileset: landcover
-    template: LANDCOVER_HMVT_%(idx)_%(row)02d_%(col)02d
+    template: LANDCOVER_HMVT_%(idx)s_%(row)02d_%(col)02d
     extension: .tif
 
 landcover-separate:
@@ -69,6 +73,7 @@ landcover-separate:
   status: temporary
   subdir: GLOBAL/LANDCOVER
   filename: LANDCOVER_CLASSES.vrt
+  multitemporal: False
   tiles:
     tileset: landcover
     template: LANDCOVER_CLASSES_%(row)02d_%(col)02d
@@ -80,6 +85,7 @@ population:
   type: raster
   subdir: GLOBAL/POPULATION
   filename: POP_2015.vrt
+  multitemporal: False
   tiles:
     tileset: landcover
     template: POP_2015_%(row)02d_%(col)02d
@@ -91,6 +97,7 @@ population-income:
   type: raster
   subdir: GLOBAL/POPULATION
   filename: SNV_2015.vrt
+  multitemporal: False
   tiles:
     tileset: landcover
     template: SNV_2015_%(row)02d_%(col)02d

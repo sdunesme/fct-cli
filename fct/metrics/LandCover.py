@@ -23,13 +23,17 @@ import fiona
 
 from ..cli import starcall
 from ..config import config
+from ..config.Configuration import (
+    DataSource,
+    MultiDataSource
+)
 from ..tileio import as_window
 
-def MkLandCoverTile(tile, landcoverset='landcover-cesbio', ds=None):
+def MkLandCoverTile(tile, landcoversrc='landcover', landcoverset='landcover-cesbio'):
 
-    if ds:
-        landcover_raster = config.datasource(ds).filename
-        landcover_idx = config.datasource(ds).idx
+    if landcoversrc:
+        landcover_raster = config.datasource(landcoversrc).filename
+        landcover_idx = config.datasource(landcoversrc).idx
     else:
         landcover_raster = config.datasource('landcover').filename
         landcover_idx = None
@@ -114,7 +118,11 @@ def MkLandCoverTiles(processes=1, **kwargs):
     # tile_shapefile = os.path.join(workdir, 'TILESET', 'GRILLE_10K.shp')
     tiles = config.tileset().tileindex
 
-    arguments = [(MkLandCoverTile, tile, kwargs) for tile in tiles.values()]
+    if type(config.datasource('landcover'))==DataSource:
+        arguments = [(MkLandCoverTile, tile, kwargs) for tile in tiles.values()]
+    elif type(config.datasource('landcover'))==MultiDataSource:
+        datasources = config.datasource('landcover').datasources
+        arguments = [(MkLandCoverTile, tile, landcoversrc, kwargs) for tile in tiles.values() for landcoversrc in datasources]
 
     with Pool(processes=processes) as pool:
 
