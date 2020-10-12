@@ -15,6 +15,7 @@ Generic Tile Management Utilities
 
 import os
 import glob
+import re
 import click
 
 from .. import __version__ as version
@@ -128,7 +129,23 @@ def vrt(tileset, dataset, suffix):
     Build GDAL Virtual Raster (VRT) from dataset tiles
     """
 
-    buildvrt(tileset, dataset, suffix)
+    if not config.dataset(dataset).properties['multitemporal']:
+        buildvrt(tileset, dataset, suffix)
+    else:
+        ds = config.dataset(dataset)
+        ts = config.tileset(tileset)
+        tilename = ds.tilename()
+        tiledir = os.path.join(os.path.dirname(ts.filename(dataset)), ts.tiledir, '**')
+
+        template = tilename.replace('%(row)02d_%(col)02d', '')
+        globexpr = template % {'idx': '*'}
+        reexpr = template % {'idx': '(.*?)'}
+
+        tiles = glob.glob(os.path.join(tiledir, globexpr)+'*', recursive=True)
+        indexes = list(set([re.search(reexpr, t).group(1) for t in tiles]))
+
+        for idx in indexes:
+            buildvrt(tileset, dataset, suffix, idx=idx)
 
 @cli.command()
 @click.argument('dataset')
