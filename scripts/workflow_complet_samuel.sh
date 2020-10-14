@@ -61,6 +61,7 @@ fct-swath discretize -j 32 $axe
 fct-corridor medialaxis $axe
 # fct-swath discretize -j 8 --medialaxis True $axe
 fct-swath discretize --talweg True -j 32 $axe # Customisé par Samuel. A confirmer avec Christophe
+# Refaire les DGO sur l'axe de référence
 
 fct-swath elevation -j 32 $axe
 fct-metrics planform $axe
