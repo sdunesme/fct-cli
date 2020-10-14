@@ -29,7 +29,11 @@ import fiona
 
 from fct.config import config
 from fct.cli.Decorators import starcall
-from fct.cli import overwritable
+from fct.cli import (
+    fct_entry_point,
+    fct_command,
+    overwritable
+)
 from fct.tileio import as_window
 from fct import __version__ as version
 
@@ -103,6 +107,7 @@ def water(**kwargs):
             FROM hydrographie.surface_hydrographique a
             WHERE ST_Intersects(a.geom, (SELECT geom FROM tile))
               AND persistance = 'Permanent'
+              AND nature != 'Glacier, névé'
         )
         SELECT row_number() over() as gid, %(landcover)d as landcover, geom FROM water_channel
         WHERE ST_GeometryType(geom) = 'ST_Polygon';
@@ -131,7 +136,9 @@ def gravels(**kwargs):
                         (SELECT geom FROM tile)))).geom as geom
             FROM hydrographie.surface_hydrographique a
             WHERE ST_Intersects(a.geom, (SELECT geom FROM tile))
-              AND persistance = 'Intermittent'
+              AND (
+                persistance = 'Intermittent'
+                OR nature = 'Glacier, névé')
         )
         SELECT row_number() over() as gid, %(landcover)d as landcover, geom FROM gravels
         WHERE ST_GeometryType(geom) = 'ST_Polygon';
@@ -524,6 +531,11 @@ def RasterizeLandCoverTile(tile, overwrite=False, **kwargs):
 
     template_raster = config.datasource('dem').filename
 
+    landcover_base_tilename = config.tileset().tilename(
+        'landcover-cesbio',
+        row=tile.row,
+        col=tile.col)
+
     output = config.tileset().tilename(
         'landcover-bdt',
         row=tile.row,
@@ -531,6 +543,10 @@ def RasterizeLandCoverTile(tile, overwrite=False, **kwargs):
 
     if os.path.exists(output) and not overwrite:
         return
+
+    with rio.open(landcover_base_tilename) as ds:
+        data = ds.read(1)
+        profile = ds.profile.copy()
 
     with rio.open(template_raster) as template:
 
@@ -540,7 +556,7 @@ def RasterizeLandCoverTile(tile, overwrite=False, **kwargs):
         height = window_t.height
         width = window_t.width
 
-        data, profile = MkBaseLandCoverTile(tile, window_t)
+        # data, profile = MkBaseLandCoverTile(tile, window_t)
         # CESBIO Water -> Open Natural
         data[data == 0] = 2
 
@@ -659,23 +675,30 @@ def CropOutSeaMask(processes=1, **kwargs):
             for _ in iterator:
                 pass
 
-@click.command()
+@fct_entry_point
+def cli(env):
+    """
+    Create landcover dataset from BD Topo & RPG
+    """
+
+@fct_command(cli)
 @click.option('--processes', '-j', default=1, help="Execute j parallel processes")
 @overwritable
-def cli(processes, overwrite):
+def rasterize(processes, overwrite):
     """
     Calculate landcover raster layer
     """
 
-    config.default()
-    tileset = config.tileset()
+    # config.default()
+    # config.auto()
+    # tileset = config.tileset()
 
-    click.secho('Command        : %s' % 'rasterize landcover', fg='green')
-    click.secho('FCT version    : %s' % version)
-    click.secho('Tileset        : %s' % tileset.name)
-    click.secho('# of tiles     : %d' % len(tileset))
-    if processes > 1:
-        click.secho('Run %d parallel processes' % processes, fg='yellow')
+    # click.secho('Command        : %s' % 'rasterize landcover', fg='green')
+    # click.secho('FCT version    : %s' % version)
+    # click.secho('Tileset        : %s' % tileset.name)
+    # click.secho('# of tiles     : %d' % len(tileset))
+    # if processes > 1:
+    #     click.secho('Run %d parallel processes' % processes, fg='yellow')
 
     RasterizeLandCover(processes, overwrite=overwrite)
 
