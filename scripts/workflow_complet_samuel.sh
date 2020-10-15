@@ -67,7 +67,7 @@ fct-swath elevation -j 32 $axe
 fct-metrics planform $axe
 fct-metrics talweg $axe
 #fct-corridor valley-profile $axe # Bug sur les swaths en erreur
-#fct-corridor refine-valley-mask -j 32 $axe
+fct-corridor refine-valley-mask -j 32 $axe
 
 fct-swath landcover -lc landcover-hmvt -j 32 207
 # Il faut supprimer les swath en erreur

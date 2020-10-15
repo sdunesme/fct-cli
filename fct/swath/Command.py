@@ -263,12 +263,20 @@ def landcover_swath(axis, landcoverset, processes):
 
     from .LandCoverSwathProfile import LandCoverSwathProfile
 
+    # TODO: subset name from dataset properties
+    if landcoverset == 'landcover-bdt':
+        subset = 'TOTAL_BDT'
+    elif landcoverset == 'landcover-hmvt':
+        subset = 'HMVT'
+    elif landcoverset == 'landcover-cesbio':
+        subset = 'CESBIO'
+
     LandCoverSwathProfile(
         axis,
         processes=processes,
         landcover=landcoverset,
         valley_bottom_mask='ax_valley_mask_refined',
-        subset='TOTAL_BDT')
+        subset=subset)
 
     # LandCoverSwathProfile(
     #     axis,
@@ -279,23 +287,28 @@ def landcover_swath(axis, landcoverset, processes):
 
 @fct_command(cli, 'export landcover swath profiles to netcdf', name='export-landcover')
 @arg_axis
-def export_landcover_to_netcdf(axis):
+@click.option('--landcoverset', '-lc', default='landcover-bdt', help='landcover dataset')
+def export_landcover_to_netcdf(axis, landcoverset):
     """
     Export landcover swath profiles to netCDF format
     """
 
     from .LandCoverSwathProfile import ExportLandcoverSwathsToNetCDF
 
-    ExportLandcoverSwathsToNetCDF(
-        axis,
-        landcover='landcover-bdt',
-        subset='TOTAL_BDT'
-    )
+    # TODO: subset name from dataset properties
+    if landcoverset == 'landcover-bdt':
+        subset = 'TOTAL_BDT'
+    elif landcoverset == 'ax_continuity':
+        subset = 'CONT_BDT'
+    elif landcoverset == 'landcover-hmvt':
+        subset = 'HMVT'
+    elif landcoverset == 'landcover-cesbio':
+        subset = 'CESBIO'
 
     ExportLandcoverSwathsToNetCDF(
         axis,
-        landcover='ax_continuity',
-        subset='CONT_BDT'
+        landcover=landcoverset,
+        subset=subset
     )
 
 @fct_command(cli, 'generate cross-profile swath axes', name='axes')

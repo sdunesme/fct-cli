@@ -16,6 +16,7 @@ LandCover Swath Profile
 import os
 import glob
 import re
+from datetime import date
 from collections import namedtuple
 from multiprocessing import Pool
 import numpy as np
@@ -68,7 +69,7 @@ def LandCoverSwath(
     if multitemporal:
         landcover_raster = {i:_rasterfile(datasets.landcover, idx=i) for i in indexes}
     else:
-        landcover_raster = {'2019':_rasterfile(datasets.landcover)}
+        landcover_raster = {date.today().strftime('%Y'):_rasterfile(datasets.landcover)}
     swath_raster = _rasterfile(datasets.swath_raster)
     axis_distance_raster = _rasterfile(datasets.axis_distance)
     nearest_distance_raster = _rasterfile(datasets.drainage_distance)
@@ -102,13 +103,17 @@ def LandCoverSwath(
         with rio.open(mask_raster) as ds:
             window = as_window(bounds, ds.transform)
             mask = ds.read(1, window=window, boundless=True, fill_value=ds.nodata)
-            mask = (mask == 0) & swath_mask
+            
+            if mask.shape == swath_mask.shape:
+                mask = (mask == 0) & swath_mask
+            else:
+                mask = swath_mask
 
     else:
 
         mask = swath_mask
 
-    values = None
+    values = dict()
     for idx in landcover_raster:
         with rio.open(landcover_raster.get(idx)) as ds:
 
@@ -126,39 +131,33 @@ def LandCoverSwath(
             values = dict(
                 x=np.zeros(0, dtype='float32'),
                 density=np.zeros(0, dtype='float32'),
-                date=idx,
                 landcover_classes=np.zeros(0, dtype='uint32'),
                 landcover_swath=np.zeros((0, 0), dtype='float32')
             )
             return gid, values
 
         if np.sum(mask) == 0:
-
             click.secho('No data for swath (%d, %d)' % (axis, gid), fg='yellow')
             values = dict(
                 x=np.zeros(0, dtype='float32'),
                 density=np.zeros(0, dtype='float32'),
-                date=idx,
                 landcover_classes=np.zeros(0, dtype='uint32'),
                 landcover_swath=np.zeros((0, 0), dtype='float32')
             )
             return gid, values
 
-        if not values:
-            xmin = np.min(axis_distance[mask])
-            xmax = np.max(axis_distance[mask])
 
-            if (xmax - xmin) < 2000.0:
-                xbins = np.arange(xmin, xmax + step, step)
-            else:
-                xbins = np.linspace(xmin, xmax, 200)
+        xmin = np.min(axis_distance[mask])
+        xmax = np.max(axis_distance[mask])
 
-            x = 0.5*(xbins[1:] + xbins[:-1])
-            axis_distance_binned = np.digitize(axis_distance, xbins)
-            # nearest_distance_binned = np.digitize(nearest_distance, xbins)
-            values = dict(x=x)
+        if (xmax - xmin) < 2000.0:
+            xbins = np.arange(xmin, xmax + step, step)
         else:
-             x = values['x']
+            xbins = np.linspace(xmin, xmax, 200)
+
+        x = 0.5*(xbins[1:] + xbins[:-1])
+        axis_distance_binned = np.digitize(axis_distance, xbins)
+        # nearest_distance_binned = np.digitize(nearest_distance, xbins)
 
         # Profile density
 
@@ -191,11 +190,21 @@ def LandCoverSwath(
                 # if density[i-1, 1] > 0:
                 #     landcover_swath[i-1, k, 1] = np.sum(data[mask1])
 
-            values[idx] = dict(
-                density=density,
-                landcover_classes=classes,
-                landcover_swath=landcover_swath
-            )
+            if multitemporal:
+                values[idx] = dict(
+                    x=x,
+                    density=density,
+                    landcover_classes=classes,
+                    landcover_swath=landcover_swath
+                )
+                
+            else:
+                values = dict(
+                    x=x,
+                    density=density,
+                    landcover_classes=classes,
+                    landcover_swath=landcover_swath
+                    )
 
     return gid, values
 
