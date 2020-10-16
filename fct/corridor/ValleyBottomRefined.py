@@ -38,14 +38,14 @@ def ValleyMaskTile(axis, row, col, threshold):
 
     datafile = config.filename('metrics_talweg', axis=axis)
     hand_raster = _tilename('ax_nearest_height')
-    swath_raster = _tilename('ax_valley_swaths')
+    swath_raster = _tilename('ax_swaths_refaxis')
     output_mask = _tilename('ax_valley_mask_refined')
     # output_height = _tilename('ax_nearest_height_refined')
 
     if not (os.path.exists(hand_raster) and os.path.exists(swath_raster)):
         return
 
-    data = xr.open_dataset(datafile)
+    data = xr.open_dataset(datafile).swap_dims({'measure': 'swath'})
 
     with rio.open(swath_raster) as ds:
         swaths = ds.read(1)
@@ -64,7 +64,7 @@ def ValleyMaskTile(axis, row, col, threshold):
                 continue
 
             try:
-                talheight = data['hmed'].sel(swath=swid).values
+                talheight = data['talweg_height_median'].sel(swath=swid).values
             except KeyError:
                 talheight = np.nan
 
@@ -100,6 +100,15 @@ def ValleyMask(axis, threshold, ax_tiles='ax_shortest_tiles', processes=1, **kwa
     Refine valley bottom mask
     0: bottom
     1: margin/hole => separate with exterior region algorithm
+
+    @api    fct-corridor:refine-valley-mask
+
+    @input  tiles: ax_shortest_tiles
+    @input  talweg_height: metrics_talweg_height
+    @input  nearest_height: ax_nearest_height
+    @input  swath_raster: ax_swaths_refaxis
+
+    @output mask: ax_valley_mask_refined
     """
 
     tilefile = config.tileset().filename(ax_tiles, axis=axis, **kwargs)
@@ -138,11 +147,11 @@ def ReclassSwathMargin(axis, row, col, **kwargs):
     def _tilename(name):
         return tileset.tilename(name, axis=axis, row=row, col=col)
 
-    swath_raster = tileset.filename('ax_valley_swaths', axis=axis)
+    swath_raster = tileset.filename('ax_swaths_refaxis', axis=axis)
     bottom_raster = tileset.filename('ax_valley_mask_refined', axis=axis)
-    swath_raster_tile = _tilename('ax_valley_swaths')
+    swath_raster_tile = _tilename('ax_swaths_refaxis')
     bottom_raster_tile = _tilename('ax_valley_mask_refined')
-    swath_bounds_file = config.filename('ax_valley_swaths_bounds', axis=axis)
+    swath_bounds_file = config.filename('ax_swaths_refaxis_bounds', axis=axis)
     swath_bounds = xr.open_dataset(swath_bounds_file)
 
     if not os.path.exists(swath_raster_tile):
@@ -222,7 +231,16 @@ def ReclassSwathMargin(axis, row, col, **kwargs):
 
 def ReclassMargin(axis, processes=1, ax_tiles='ax_shortest_tiles', **kwargs):
     """
-    DOCME
+    Distinguish holes from corridor margin
+
+    @api    fct-corridor:?
+
+    @input  tiles: ax_shortest_tiles
+    @input  swath_bounds: ax_swaths_refaxis_bounds
+    @input  swath_raster: ax_swaths_refaxis
+    @input  mask: ax_valley_mask_refined
+
+    @output mask: ax_valley_mask_refined
     """
 
     tilefile = config.tileset().filename(ax_tiles, axis=axis, **kwargs)

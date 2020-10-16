@@ -30,7 +30,7 @@ import rasterio as rio
 from rasterio import features
 import fiona
 import fiona.crs
-from shapely.geometry import asShape
+from shapely.geometry import asShape, Polygon
 
 from ..config import config
 # from ..tileio import ReadRasterTile
@@ -139,7 +139,8 @@ SwathMeasurementParams = namedtuple('SwathMeasurementParams', [
 
 def ValleyBottomParameters():
     """
-    Default parameters (valley swath units)
+    Create swaths units using talweg reference axis
+    and first-iteration valley bottom mask
     """
 
     return dict(
@@ -148,26 +149,26 @@ def ValleyBottomParameters():
         ax_talweg_distance='ax_nearest_distance',
         output_distance='ax_axis_distance',
         output_measure='ax_axis_measure',
-        output_swaths_raster='ax_valley_swaths',
-        output_swaths_shapefile='ax_valley_swaths_polygons',
-        output_swaths_bounds='ax_valley_swaths_bounds',
+        output_swaths_raster='ax_swaths_refaxis',
+        output_swaths_shapefile='ax_swaths_refaxis_polygons',
+        output_swaths_bounds='ax_swaths_refaxis_bounds',
         mdelta=200.0
     )
 
 def ValleyMedialAxisParameters():
     """
-    Default parameters (valley swath units)
+    Create swaths units using medial axis reference
     """
 
     return dict(
-        ax_mask='ax_valley_mask',
-        ax_reference='ax_valley_medialaxis',
+        ax_mask='ax_swaths_refaxis',
+        ax_reference='ax_medialaxis',
         ax_talweg_distance='ax_nearest_distance',
-        output_distance='ax_axis_distance',
-        output_measure='ax_axis_measure',
-        output_swaths_raster='ax_valley_swaths',
-        output_swaths_shapefile='ax_valley_swaths_polygons',
-        output_swaths_bounds='ax_valley_swaths_bounds',
+        output_distance='ax_medialaxis_distance',
+        output_measure='ax_medialaxis_measure',
+        output_swaths_raster='ax_swaths_medialaxis',
+        output_swaths_shapefile='ax_swaths_medialaxis_polygons',
+        output_swaths_bounds='ax_swaths_medialaxis_bounds',
         mdelta=200.0
     )
 
@@ -228,6 +229,9 @@ def DisaggregateTileIntoSwaths(axis, row, col, params, **kwargs):
     output_swaths_raster = _tilename(params.output_swaths_raster)
 
     mdelta = params.mdelta
+
+    if not os.path.exists(mask_raster):
+        return {}
 
     with rio.open(mask_raster) as ds:
 
@@ -367,6 +371,19 @@ def DisaggregateIntoSwaths(axis, ax_tiles='ax_tiles', processes=1, **kwargs):
     """
     Calculate measurement support rasters and
     create discrete longitudinal swath units along the reference axis
+
+    @api    fct-swath:discretize
+
+    @input  reference_axis: ax_refaxis
+    @input  mask: ax_valley_mask
+    @input  tiles: ax_shortest_tiles
+    @param  mdelta: 200.0
+
+    @output measure: ax_axis_measure
+    @output distance: ax_axis_distance
+    @output swath_raster: ax_valley_swaths
+    @output swath_polygons: ax_valley_swaths_polygons
+    @output swath_bounds: ax_valley_swaths_bounds
     """
 
     parameters = ValleyBottomParameters()
@@ -576,7 +593,7 @@ def VectorizeSwathPolygons(axis, processes=1, **kwargs):
                 kwargs
             )
 
-    output = config.filename(params.output_swaths_shapefile, axis=axis)
+    output = config.filename(params.output_swaths_shapefile, mod=False, axis=axis)
 
     schema = {
         'geometry': 'Polygon',
@@ -602,10 +619,11 @@ def VectorizeSwathPolygons(axis, processes=1, **kwargs):
                 for gid, measure, polygons in iterator:
                     for (polygon, value) in polygons:
 
-                        geom = asShape(polygon).buffer(0.0)
+                        geom = asShape(polygon)
+                        exterior = Polygon(geom.exterior)
 
                         feature = {
-                            'geometry': geom.__geo_interface__,
+                            'geometry': exterior.__geo_interface__,
                             'properties': {
                                 'GID': int(gid),
                                 'AXIS': axis,
@@ -617,6 +635,24 @@ def VectorizeSwathPolygons(axis, processes=1, **kwargs):
                         }
 
                         dst.write(feature)
+
+                        for ring in geom.interiors:
+
+                            if not exterior.contains(ring):
+
+                                feature = {
+                                    'geometry': Polygon(ring).__geo_interface__,
+                                    'properties': {
+                                        'GID': int(gid),
+                                        'AXIS': axis,
+                                        'VALUE': int(value),
+                                        # 'ROW': row,
+                                        # 'COL': col,
+                                        'M': float(measure)
+                                    }
+                                }
+
+                                dst.write(feature)
 
 def UpdateSwathTile(axis, tile, params):
 
@@ -668,7 +704,19 @@ def UpdateSwathTile(axis, tile, params):
     with rio.open(swath_raster, 'w', **profile) as dst:
         dst.write(swaths, 1)
 
-def UpdateSwathRaster(axis, ax_tiles='ax_tiles', processes=1, **kwargs):
+def UpdateSwathRaster(axis, ax_tiles='ax_shortest_tiles', processes=1, **kwargs):
+    """
+    Commit manual swath edits to swaths raster
+
+    @api    fct-swath:update
+
+    @input  tiles: ax_shortest_tiles
+    @input  swath_raster: ax_valley_swaths
+
+    @param  sieve_threshold: 40
+
+    @output swath_raster: ax_valley_swaths
+    """
 
     parameters = ValleyBottomParameters()
     parameters.update({key: kwargs[key] for key in kwargs.keys() & parameters.keys()})
