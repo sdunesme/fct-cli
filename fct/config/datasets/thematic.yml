@@ -5,6 +5,7 @@ landcover-default:
     Default LandCover Tileset
   type: raster
   subdir: GLOBAL/LANDCOVER
+  subset: DEF
   filename: LANDCOVER_2018.vrt
   multitemporal: False
   tiles:
@@ -18,6 +19,7 @@ landcover-cesbio:
     derived from Sentinel 2 annual classification
   type: raster
   subdir: GLOBAL/CESBIO
+  subset: CESBIO
   filename: LANDCOVER_CESBIO_2018.vrt
   multitemporal: False
   tiles:
@@ -31,6 +33,7 @@ landcover-gpk:
     derived from BD Topo 2019 + RPG 2016
   type: raster
   subdir: GLOBAL/GEOPEKA
+  subset: GPK
   filename: LANDCOVER_GEOPEKA_2019.vrt
   multitemporal: False
   tiles:
@@ -44,6 +47,7 @@ landcover-bdt:
     (direct rasterization)
   type: raster
   subdir: GLOBAL/BDTOPO
+  subset: TOTAL_BDT
   filename: LANDCOVER_BDT_2019.vrt
   multitemporal: False
   tiles:
@@ -57,6 +61,7 @@ landcover-hmvt:
     derived from historcial topographic maps
   type: raster
   subdir: GLOBAL/HMVT
+  subset: HMVT
   filename: LANDCOVER_HMVT_%(idx)s.vrt
   multitemporal: True
   tiles:

@@ -4,7 +4,8 @@
 Command Line Interface for Corridor Module
 """
 
-
+import glob
+import re
 import click
 
 from ..cli import (
@@ -15,6 +16,7 @@ from ..cli import (
 )
 
 from ..tileio import buildvrt
+from ..config import config
 
 # pylint: disable=import-outside-toplevel,unused-argument
 
@@ -263,20 +265,34 @@ def landcover_swath(axis, landcoverset, processes):
 
     from .LandCoverSwathProfile import LandCoverSwathProfile
 
-    # TODO: subset name from dataset properties
-    if landcoverset == 'landcover-bdt':
-        subset = 'TOTAL_BDT'
-    elif landcoverset == 'landcover-hmvt':
-        subset = 'HMVT'
-    elif landcoverset == 'landcover-cesbio':
-        subset = 'CESBIO'
+    if config.dataset(landcoverset).properties['multitemporal']:
+        template = config.filename(landcoverset)
+        globexpr = template % {'idx': '*'}
+        reexpr = template % {'idx': '(.*?)_(.*)'}
+        vrts = glob.glob(globexpr)
+        indexes = [re.search(reexpr, t).group(1) for t in vrts]
+        subsets = ["%s_%s" % (config.dataset(landcoverset).properties['subset'], idx) for idx in indexes]
 
-    LandCoverSwathProfile(
-        axis,
-        processes=processes,
-        landcover=landcoverset,
-        valley_bottom_mask='ax_valley_mask_refined',
-        subset=subset)
+        for subset, date in zip(subsets, indexes):
+            click.echo('Subdataset: %s' (subset))
+            LandCoverSwathProfile(
+                axis,
+                processes=processes,
+                landcover=landcoverset,
+                valley_bottom_mask='ax_valley_mask_refined',
+                subset=subset,
+                idx=date
+            )
+
+    else: 
+        subset = config.dataset(landcoverset).properties['subset']
+
+        LandCoverSwathProfile(
+            axis,
+            processes=processes,
+            landcover=landcoverset,
+            valley_bottom_mask='ax_valley_mask_refined',
+            subset=subset)
 
     # LandCoverSwathProfile(
     #     axis,
@@ -295,15 +311,7 @@ def export_landcover_to_netcdf(axis, landcoverset):
 
     from .LandCoverSwathProfile import ExportLandcoverSwathsToNetCDF
 
-    # TODO: subset name from dataset properties
-    if landcoverset == 'landcover-bdt':
-        subset = 'TOTAL_BDT'
-    elif landcoverset == 'ax_continuity':
-        subset = 'CONT_BDT'
-    elif landcoverset == 'landcover-hmvt':
-        subset = 'HMVT'
-    elif landcoverset == 'landcover-cesbio':
-        subset = 'CESBIO'
+    subset = config.dataset(landcoverset).properties['subset']
 
     ExportLandcoverSwathsToNetCDF(
         axis,

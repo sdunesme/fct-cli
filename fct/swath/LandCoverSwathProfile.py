@@ -88,7 +88,11 @@ def LandCoverSwath(
         with rio.open(mask_raster) as ds:
             window = as_window(bounds, ds.transform)
             mask = ds.read(1, window=window, boundless=True, fill_value=ds.nodata)
-            mask = (mask == 0) & swath_mask
+            
+            if mask.shape == swath_mask.shape:
+                mask = (mask == 0) & swath_mask
+            else:
+                mask = swath_mask
 
     else:
 
