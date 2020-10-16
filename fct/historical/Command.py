@@ -22,7 +22,8 @@ from ..cli import (
     parallel_opt
 )
 
-from .MultiLandCover import MkMultiLandCoverTiles
+from ..config import config
+from .MultiLandCoverSwathProfile import MergeMultiLandCoverSwathProfiles
 # pylint: disable=import-outside-toplevel,unused-argument
 
 @fct_entry_point
@@ -32,11 +33,16 @@ def cli(env):
     """
 
 @fct_command(cli)
-@click.option('--processes', '-j', default=1, help="Execute j parallel processes")
+@arg_axis
 @click.option('--landcoverset', '-lc', default='landcover-hmvt', help='landcover multidataset')
-def data_landcover(processes=1, landcoverset='landcover-hmvt'):
+def merge_landcover(axis, landcoverset='landcover-hmvt'):
     """
-    Reclass multi-temporal landcover data and create landcover tiles
+    Merge multiple landcover netcdf profiles
     """
 
-    MkMultiLandCoverTiles(processes, landcoverset)
+    if not config.dataset(landcoverset).properties['multitemporal']:
+        click.secho('Merging multiple landcover is only available for multitemporal landcover datasets', fg='yellow')
+        return
+
+    MergeMultiLandCoverSwathProfiles(axis, landcoverset)
+    
