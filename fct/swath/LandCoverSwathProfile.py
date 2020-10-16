@@ -14,9 +14,6 @@ LandCover Swath Profile
 """
 
 import os
-import glob
-import re
-from datetime import date
 from collections import namedtuple
 from multiprocessing import Pool
 import numpy as np
@@ -54,22 +51,10 @@ def LandCoverSwath(
     Calculate land cover swath profile for longitudinal unit (axis, gid)
     """
 
-    multitemporal = False
-    if config.dataset(datasets.landcover).properties['multitemporal']:
-        multitemporal = True
-        template = config.filename(datasets.landcover)
-        globexpr = template % {'idx': '*'}
-        reexpr = template % {'idx': '(.*?)_(.*)'}
-        vrts = glob.glob(globexpr)
-        indexes = [re.search(reexpr, t).group(1) for t in vrts]
-
-    def _rasterfile(name, **kwargs):
+    def _rasterfile(name):
         return config.tileset().filename(name, axis=axis, **kwargs)
 
-    if multitemporal:
-        landcover_raster = {i:_rasterfile(datasets.landcover, idx=i) for i in indexes}
-    else:
-        landcover_raster = {date.today().strftime('%Y'):_rasterfile(datasets.landcover)}
+    landcover_raster = _rasterfile(datasets.landcover)
     swath_raster = _rasterfile(datasets.swath_raster)
     axis_distance_raster = _rasterfile(datasets.axis_distance)
     nearest_distance_raster = _rasterfile(datasets.drainage_distance)
@@ -103,22 +88,16 @@ def LandCoverSwath(
         with rio.open(mask_raster) as ds:
             window = as_window(bounds, ds.transform)
             mask = ds.read(1, window=window, boundless=True, fill_value=ds.nodata)
-            
-            if mask.shape == swath_mask.shape:
-                mask = (mask == 0) & swath_mask
-            else:
-                mask = swath_mask
+            mask = (mask == 0) & swath_mask
 
     else:
 
         mask = swath_mask
 
-    values = dict()
-    for idx in landcover_raster:
-        with rio.open(landcover_raster.get(idx)) as ds:
+    with rio.open(landcover_raster) as ds:
 
-            window = as_window(bounds, ds.transform)
-            landcover = ds.read(1, window=window, boundless=True, fill_value=ds.nodata)
+        window = as_window(bounds, ds.transform)
+        landcover = ds.read(1, window=window, boundless=True, fill_value=ds.nodata)
 
         # assert hand.shape == landcover.shape
         try:
@@ -134,9 +113,10 @@ def LandCoverSwath(
                 landcover_classes=np.zeros(0, dtype='uint32'),
                 landcover_swath=np.zeros((0, 0), dtype='float32')
             )
-            return gid, values
+            return gid, values        
 
         if np.sum(mask) == 0:
+
             click.secho('No data for swath (%d, %d)' % (axis, gid), fg='yellow')
             values = dict(
                 x=np.zeros(0, dtype='float32'),
@@ -145,7 +125,6 @@ def LandCoverSwath(
                 landcover_swath=np.zeros((0, 0), dtype='float32')
             )
             return gid, values
-
 
         xmin = np.min(axis_distance[mask])
         xmax = np.max(axis_distance[mask])
@@ -190,23 +169,14 @@ def LandCoverSwath(
                 # if density[i-1, 1] > 0:
                 #     landcover_swath[i-1, k, 1] = np.sum(data[mask1])
 
-            if multitemporal:
-                values[idx] = dict(
-                    x=x,
-                    density=density,
-                    landcover_classes=classes,
-                    landcover_swath=landcover_swath
-                )
-                
-            else:
-                values = dict(
-                    x=x,
-                    density=density,
-                    landcover_classes=classes,
-                    landcover_swath=landcover_swath
-                    )
+        values = dict(
+            x=x,
+            density=density,
+            landcover_classes=classes,
+            landcover_swath=landcover_swath
+        )
 
-    return gid, values
+        return gid, values
 
 def LandCoverSwathProfile(axis, processes=1, **kwargs):
     """
@@ -305,7 +275,7 @@ def LandCoverSwathProfile(axis, processes=1, **kwargs):
 
                 if feature['properties']['VALUE'] == 0:
                     continue
-                
+
                 gid = feature['properties']['GID']
                 measure = feature['properties']['M']
                 geometry = asShape(feature['geometry'])
