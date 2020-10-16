@@ -274,7 +274,8 @@ def landcover_swath(axis, landcoverset, processes):
         subsets = ["%s_%s" % (config.dataset(landcoverset).properties['subset'], idx) for idx in indexes]
 
         for subset, date in zip(subsets, indexes):
-            click.echo('Subdataset: %s' (subset))
+            click.echo('Subdataset: %s' % (subset))
+
             LandCoverSwathProfile(
                 axis,
                 processes=processes,
@@ -311,13 +312,32 @@ def export_landcover_to_netcdf(axis, landcoverset):
 
     from .LandCoverSwathProfile import ExportLandcoverSwathsToNetCDF
 
-    subset = config.dataset(landcoverset).properties['subset']
+    if config.dataset(landcoverset).properties['multitemporal']:
+        template = config.filename(landcoverset)
+        globexpr = template % {'idx': '*'}
+        reexpr = template % {'idx': '(.*?)_(.*)'}
+        vrts = glob.glob(globexpr)
+        indexes = [re.search(reexpr, t).group(1) for t in vrts]
+        subsets = ["%s_%s" % (config.dataset(landcoverset).properties['subset'], idx) for idx in indexes]
 
-    ExportLandcoverSwathsToNetCDF(
-        axis,
-        landcover=landcoverset,
-        subset=subset
-    )
+        for subset, date in zip(subsets, indexes):
+            click.echo('Subdataset: %s' % (subset))
+
+            ExportLandcoverSwathsToNetCDF(
+                axis,
+                landcover=landcoverset,
+                subset=subset,
+                idx=date
+            )
+
+    else:
+        subset = config.dataset(landcoverset).properties['subset']
+
+        ExportLandcoverSwathsToNetCDF(
+            axis,
+            landcover=landcoverset,
+            subset=subset
+        )
 
 @fct_command(cli, 'generate cross-profile swath axes', name='axes')
 @arg_axis
