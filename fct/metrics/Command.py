@@ -13,6 +13,8 @@ Metrics Calculation Commands
 ***************************************************************************
 """
 
+import glob
+import re
 import click
 
 from .LandCover import MkLandCoverTiles
@@ -24,6 +26,7 @@ from ..subgrid.SubGrid import (
     DominantLandCover
 )
 
+from ..config import config
 from ..cli import (
     fct_entry_point,
     fct_command,
@@ -211,7 +214,9 @@ def corridor_width(axis):
 
 @fct_command(cli)
 @arg_axis
-def landcover_width(axis):
+@click.option('--landcoverset', '-lc', default='landcover-bdt', help='landcover dataset')
+@click.option('--method', '-m', default='total', help='measure method (total or continuous)')
+def landcover_width(axis, landcoverset, method):
     """
     Calculate landcover width metrics
     """
@@ -222,23 +227,43 @@ def landcover_width(axis):
         WriteLandCoverWidth
     )
 
-    datasets = DatasetParameter(
-        landcover='landcover-bdt',
-        swath_features='ax_valley_swaths_polygons',
-        swath_data='ax_swath_landcover_npz'
-    )
-    method = 'total landcover width'
-    subset = 'TOTAL_BDT'
-    data = LandCoverWidth(axis, method, datasets, subset=subset)
-    WriteLandCoverWidth(axis, data, output='metrics_lcw_variant', variant=subset)
+    if method=='total':
+        method = 'total landcover width'
+    elif method=='continuous':
+        method = 'continuous buffer width from river channel'
+    else:
+        click.secho('Unrecognized method (total or continuous)', fg='red')
+        return
 
-    datasets = DatasetParameter(
-        # landcover='ax_corridor_mask',
-        landcover='ax_continuity',
-        swath_features='ax_valley_swaths_polygons',
-        swath_data='ax_swath_landcover_npz'
-    )
-    method = 'continuous buffer width from river channel'
-    subset = 'CONT_BDT'
-    data = LandCoverWidth(axis, method, datasets, subset=subset)
-    WriteLandCoverWidth(axis, data, output='metrics_lcw_variant', variant=subset)
+    if config.dataset(landcoverset).properties['multitemporal']:
+        template = config.filename(landcoverset)
+        globexpr = template % {'idx': '*'}
+        reexpr = template % {'idx': '(.*?)_(.*)'}
+        vrts = glob.glob(globexpr)
+        indexes = [re.search(reexpr, t).group(1) for t in vrts]
+        subsets = ["%s_%s" % (config.dataset(landcoverset).properties['subset'], idx) for idx in indexes]
+
+        for subset, date in zip(subsets, indexes):
+            click.echo('Subdataset: %s' % (subset))
+
+            datasets = DatasetParameter(
+                landcover=landcoverset,
+                swath_features='ax_valley_swaths_polygons',
+                swath_data='ax_swath_landcover_npz'
+            )
+            subset = subset
+            data = LandCoverWidth(axis, method, datasets, subset=subset, idx=date)
+            WriteLandCoverWidth(axis, data, output='metrics_lcw_variant', variant=subset, idx=date)
+
+    else:
+        subset = config.dataset(landcoverset).properties['subset']
+
+        datasets = DatasetParameter(
+            # landcover='ax_corridor_mask',
+            landcover=landcoverset,
+            swath_features='ax_valley_swaths_polygons',
+            swath_data='ax_swath_landcover_npz'
+        )
+        subset = subset
+        data = LandCoverWidth(axis, method, datasets, subset=subset)
+        WriteLandCoverWidth(axis, data, output='metrics_lcw_variant', variant=subset)

@@ -32,7 +32,7 @@ from ..cli import starcall
 from ..config import config
 from ..metadata import set_metadata
 
-def MergeMultiLandCoverSwathProfiles(axis, landcoverset, **kwargs):
+def MergeMultitemporalDataset(axis, landcoverset, input_dataset, output_dataset, **kwargs):
     template = config.filename(landcoverset)
     subset = config.dataset(landcoverset).properties['subset']
     globexpr = template % {'idx': '*'}
@@ -41,7 +41,7 @@ def MergeMultiLandCoverSwathProfiles(axis, landcoverset, **kwargs):
     indexes = [re.search(reexpr, t).group(1) for t in vrts]
     subsets = ["%s_%s" % (subset, idx) for idx in indexes]
     
-    inputs_filenames = [config.filename('swath_landcover', axis=axis, subset=s) for s in subsets]
+    inputs_filenames = [config.filename(input_dataset, axis=axis, subset=s, variant=s) for s in subsets]
     inputs = [xr.open_dataset(f) for f in inputs_filenames]
     dates = [int(idx) for idx in indexes]
 
@@ -52,7 +52,7 @@ def MergeMultiLandCoverSwathProfiles(axis, landcoverset, **kwargs):
 
     dataset.attrs['source'] = vrts
 
-    output = config.filename('swath_multilandcover', axis=axis, subset=subset, **kwargs)
+    output = config.filename(output_dataset, axis=axis, subset=subset, **kwargs)
     dataset.to_netcdf(output, 'w')
 
     return dataset

@@ -23,7 +23,7 @@ from ..cli import (
 )
 
 from ..config import config
-from .MultiLandCoverSwathProfile import MergeMultiLandCoverSwathProfiles
+from .MergeMultitemporalDataset import MergeMultitemporalDataset
 # pylint: disable=import-outside-toplevel,unused-argument
 
 @fct_entry_point
@@ -35,7 +35,8 @@ def cli(env):
 @fct_command(cli)
 @arg_axis
 @click.option('--landcoverset', '-lc', default='landcover-hmvt', help='landcover multidataset')
-def merge_landcover(axis, landcoverset='landcover-hmvt'):
+@click.option('--dataset', '-ds', default='metrics_lcw_variant', help='dataset to merge')
+def merge_landcover(axis, landcoverset='landcover-hmvt', dataset='metrics_lcw_variant'):
     """
     Merge multiple landcover netcdf profiles
     """
@@ -44,5 +45,10 @@ def merge_landcover(axis, landcoverset='landcover-hmvt'):
         click.secho('Merging multiple landcover is only available for multitemporal landcover datasets', fg='yellow')
         return
 
-    MergeMultiLandCoverSwathProfiles(axis, landcoverset)
+    if dataset=='swath_landcover':
+        output_dataset = 'swath_multilandcover'
+    elif dataset=='metrics_lcw_variant':
+        output_dataset = 'multimetrics_lcw_variant'
+
+    MergeMultitemporalDataset(axis, landcoverset, dataset, output_dataset)
     

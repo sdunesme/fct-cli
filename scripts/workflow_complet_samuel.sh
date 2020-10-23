@@ -71,6 +71,10 @@ fct-corridor refine-valley-mask -j 32 $axe
 
 fct-swath landcover -lc landcover-hmvt -j 32 207
 # Il faut supprimer les swath en erreur
+fct-metrics landcover-width -lc landcover-hmvt -m total 207
+
+fct-historical merge_landcover -ds swath_landcover 207
+fct-historical merge_landcover -ds metrics_lcw_variant 207
 
 fct-metrics valleybottom-width 207
 fct-plot landcover-profile-lr 207
