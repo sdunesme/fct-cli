@@ -35,8 +35,8 @@ def cli(env):
 @fct_command(cli)
 @arg_axis
 @click.option('--landcoverset', '-lc', default='landcover-hmvt', help='landcover multidataset')
-@click.option('--dataset', '-ds', default='metrics_lcw_variant', help='dataset to merge')
-def merge_landcover(axis, landcoverset='landcover-hmvt', dataset='metrics_lcw_variant'):
+@click.option('--dataset', '-ds', default='metrics_width_landcover', help='dataset to merge')
+def merge_landcover(axis, landcoverset='landcover-hmvt', dataset='metrics_width_landcover'):
     """
     Merge multiple landcover netcdf profiles
     """
@@ -47,8 +47,8 @@ def merge_landcover(axis, landcoverset='landcover-hmvt', dataset='metrics_lcw_va
 
     if dataset=='swath_landcover':
         output_dataset = 'swath_multilandcover'
-    elif dataset=='metrics_lcw_variant':
-        output_dataset = 'multimetrics_lcw_variant'
+    elif dataset=='metrics_width_landcover':
+        output_dataset = 'metrics_width_multilandcover'
 
     MergeMultitemporalDataset(axis, landcoverset, dataset, output_dataset)
     

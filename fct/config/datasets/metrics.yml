@@ -91,6 +91,15 @@ metrics_width_landcover:
   subdir: AXES/AX%(axis)04d/METRICS
   filename: WIDTH_LANDCOVER_%(variant)s.nc
 
+metrics_width_multilandcover:
+  description: |
+    MultiLandCover Width (Variants)
+  type: netcdf
+  group: metrics
+  status: final
+  subdir: AXES/AX%(axis)04d/METRICS
+  filename: WIDTH_MULTILANDCOVER_%(subset)s.nc
+
 metrics_width_continuity:
   description: |
     LandCover Width (Variants)
@@ -99,15 +108,6 @@ metrics_width_continuity:
   status: final
   subdir: AXES/AX%(axis)04d/METRICS
   filename: WIDTH_CONTINUITY_%(variant)s.nc
-
-multimetrics_lcw_variant:
-  description: |
-    LandCover Width (Variants)
-  type: netcdf
-  group: metrics
-  status: final
-  subdir: AXES/AX%(axis)04d/METRICS
-  filename: MULTILANDCOVER_WIDTH_%(subset)s.nc
 
 metrics_watershed:
   description: |
