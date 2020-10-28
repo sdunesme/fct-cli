@@ -197,20 +197,20 @@ def valleybottom_width(axis):
     width = ValleyBottomWidth(axis)
     WriteValleyBottomWidth(axis, width)
 
-@fct_command(cli)
-@arg_axis
-def corridor_width(axis):
-    """
-    Calculate corridor width metrics
-    """
+# @fct_command(cli)
+# @arg_axis
+# def corridor_width(axis):
+#     """
+#     Calculate corridor width metrics
+#     """
 
-    from .CorridorWidth import (
-        CorridorWidth,
-        WriteCorridorWidth
-    )
+#     from .CorridorWidth import (
+#         CorridorWidth,
+#         WriteCorridorWidth
+#     )
 
-    width = CorridorWidth(axis)
-    WriteCorridorWidth(axis, width)
+#     width = CorridorWidth(axis)
+#     WriteCorridorWidth(axis, width)
 
 @fct_command(cli)
 @arg_axis
@@ -259,7 +259,6 @@ def landcover_width(axis, landcoverset, method):
         subset = config.dataset(landcoverset).properties['subset']
 
         datasets = DatasetParameter(
-            # landcover='ax_corridor_mask',
             landcover=landcoverset,
             swath_features='ax_valley_swaths_polygons',
             swath_data='ax_swath_landcover_npz'
@@ -267,3 +266,55 @@ def landcover_width(axis, landcoverset, method):
         subset = subset
         data = LandCoverWidth(axis, method, datasets, subset=subset)
         WriteLandCoverWidth(axis, data, output='metrics_lcw_variant', variant=subset)
+
+        # datasets = DatasetParameter(
+        #     # landcover='ax_corridor_mask',
+        #     landcover='ax_continuity',
+        #     swath_features='ax_swaths_refaxis_polygons',
+        #     swath_data='ax_swath_landcover_npz'
+        # )
+        # method = 'continuous buffer width from river channel'
+        # data = LandCoverWidth(axis, method, datasets, subset='MAX')
+        # WriteLandCoverWidth(axis, data, output='metrics_width_continuity', variant='RAW_MAX')
+
+        # datasets = DatasetParameter(
+        #     # landcover='ax_corridor_mask',
+        #     landcover='ax_continuity',
+        #     swath_features='ax_swaths_refaxis_polygons',
+        #     swath_data='ax_swath_landcover_npz'
+        # )
+        # method = 'continuous buffer width from river channel'
+        # data = LandCoverWidth(axis, method, datasets, subset='WEIGHTED')
+        # WriteLandCoverWidth(axis, data, output='metrics_width_continuity', variant='RAW_WEIGHTED')
+
+@fct_command(cli)
+@arg_axis
+def continuity_width(axis):
+    """
+    Calculate continuity width metrics
+    """
+
+    from fct.metrics.ContinuityWidth import (
+        DatasetParameter,
+        ContinuityWidth,
+        WriteContinuityWidth
+    )
+
+    datasets = DatasetParameter(
+        # landcover='ax_corridor_mask',
+        landcover='ax_continuity_variant_remapped',
+        swath_features='ax_swaths_refaxis_polygons',
+        swath_data='ax_swath_landcover_npz'
+    )
+
+    method = 'interpreted continuity classes from main channel'
+    subset = 'MAX'
+
+    data = ContinuityWidth(axis, method, datasets, variant=subset, subset=subset)
+    WriteContinuityWidth(axis, data, output='metrics_width_continuity', variant=subset)
+
+    method = 'interpreted continuity classes from main channel'
+    subset = 'WEIGHTED'
+
+    data = ContinuityWidth(axis, method, datasets, variant=subset, subset=subset)
+    WriteContinuityWidth(axis, data, output='metrics_width_continuity', variant=subset)

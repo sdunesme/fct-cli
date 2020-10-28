@@ -51,7 +51,7 @@ def ValleyBottomWidth(axis, swath_length=200.0, resolution=5.0):
 
     """
 
-    swath_shapefile = config.filename('ax_valley_swaths_polygons', axis=axis)
+    swath_shapefile = config.filename('ax_swaths_refaxis_polygons', axis=axis)
 
     heights = np.arange(5.0, 15.5, 0.5)
 
@@ -81,6 +81,10 @@ def ValleyBottomWidth(axis, swath_length=200.0, resolution=5.0):
                 vb_area_h = data['valley_bottom_area_h']
                 vb_area_lr = data['valley_bottom_area_lr']
                 vb_swath = data['valley_bottom_swath']
+
+                if len(x) < 2:
+                    valid[k] = False
+                    continue
 
                 # unit width of observations
                 unit_width = 0.5 * (np.roll(x, -1) - np.roll(x, 1))
@@ -115,13 +119,13 @@ def ValleyBottomWidth(axis, swath_length=200.0, resolution=5.0):
             'side': ['left', 'right']
         })
 
-    set_metadata(dataset, 'metrics_valleybottom_width')
+    set_metadata(dataset, 'metrics_width_corridor')
 
     return dataset
 
 def WriteValleyBottomWidth(axis, data):
 
-    output = config.filename('metrics_valleybottom_width', axis=axis)
+    output = config.filename('metrics_width_corridor', axis=axis)
 
     data.to_netcdf(
         output, 'w',

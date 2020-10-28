@@ -82,6 +82,35 @@ def setup_axes():
 
 @cli.command()
 @arg_axis
+@parallel_opt
+def prepare_from_backup(axis, processes):
+    """
+    Restore Height above nearest drainage (HAND)
+    and reference axis from first iteration HAND & valley medial axis.
+    """
+
+    from .Prepare import (
+        MaskHeightAboveNearestDrainage,
+        RestoreReferenceAxis
+    )
+
+    MaskHeightAboveNearestDrainage(axis, processes)
+    RestoreReferenceAxis(axis)
+
+@cli.command()
+@arg_axis
+@parallel_opt
+def landcover(axis, processes):
+    """
+    Restore Height above nearest drainage (HAND)
+    and reference axis from first iteration HAND & valley medial axis.
+    """
+
+    from .Prepare import MaskLandcover
+    MaskLandcover(axis, processes)
+
+@cli.command()
+@arg_axis
 @click.option('--vrt/--no-vrt', default=True, help='Build VRT after processing')
 @parallel_opt
 def flow_height(axis, vrt, processes):
@@ -202,6 +231,26 @@ def valleymask(axis, vrt, processes):
 
 @cli.command()
 @arg_axis
+def medialaxis(axis):
+    """
+    Calculate corridor medial axis
+    """
+
+    from .MedialAxis import MedialAxis
+
+    start_time = PrintCommandInfo(
+        'corridor medial axis',
+        axis,
+        1,
+        {})
+
+    MedialAxis(axis)
+
+    elapsed = time.time() - start_time
+    click.secho('Elapsed time   : %s' % pretty_time_delta(elapsed))
+
+@cli.command()
+@arg_axis
 @click.option('--threshold', '-t', default=5.0, help='height threshold in meters')
 @parallel_opt
 def refine_valley_mask(axis, threshold, processes):
@@ -224,25 +273,6 @@ def refine_valley_mask(axis, threshold, processes):
 
     buildvrt('default', 'ax_valley_mask_refined', axis=axis)
 
-@cli.command('medialaxis')
-@arg_axis
-def valley_medial_axis(axis):
-    """
-    Calculate valley medial axis
-    """
-
-    from .ValleyMedialAxis import (
-        ValleyMedialAxis,
-        ExportValleyMedialAxisToShapefile,
-        unproject
-    )
-
-    medialaxis = ValleyMedialAxis(axis, processes=6)
-    data = xr.Dataset({'dist': ('measure', medialaxis[:, 1])}, coords={'measure': medialaxis[:, 0]})
-    smoothed = data.rolling(measure=5, center=True, min_periods=1).mean()
-    transformed = unproject(axis, np.column_stack([smoothed.measure, smoothed.dist]))
-    ExportValleyMedialAxisToShapefile(axis, transformed[~np.isnan(transformed[:, 1])])
-
 @cli.command()
 @arg_axis
 def valley_profile(axis):
@@ -263,7 +293,7 @@ def valley_profile(axis):
 @arg_axis
 def talweg_profile(axis):
     """
-    Calculate idealized/smoothed valley elevation profile
+    Calculate idealized/smoothed talweg elevation profile
     """
 
     from .TalwegElevationProfile import TalwegElevationProfile
@@ -346,6 +376,11 @@ def continuity(axis, processes, maxiter, infra):
     else:
         parameters = NoInfrastructureParameters()
 
+    parameters.update(
+        output='ax_continuity_variant',
+        variant='MAX'
+    )
+
     start_time = PrintCommandInfo('landcover continuity analysis', axis, processes, parameters)
 
     LandcoverContinuityAnalysis(
@@ -354,50 +389,110 @@ def continuity(axis, processes, maxiter, infra):
         maxiter=maxiter,
         **parameters)
 
+    # buildvrt('default', 'ax_continuity_variant', axis=axis, variant='MAX')
+
     elapsed = time.time() - start_time
     click.secho('Elapsed time   : %s' % pretty_time_delta(elapsed))
 
 @cli.command()
 @arg_axis
-@click.option('--width', '-b', default=40.0, help='buffer width in pixels')
 @parallel_opt
-def corridor_mask(axis, width, processes):
+# @click.option('--maxiter', '-it', default=10, help='Stop after max iterations')
+# @click.option('--infra/--no-infra', default=True, help='Account for infrastructures in space fragmentation')
+def continuity_weighted(axis, processes):
     """
-    Calculate natural/reversible corridor
+    Extract natural corridor from landcover
+    within valley bottom
     """
 
-    from .CorridorMask import CorridorMask
+    from ..continuity.LateralContinuity import LateralContinuity
 
-    start_time = PrintCommandInfo(
-        'natural corridor mask',
-        axis,
-        processes,
-        dict(buffer_width=width))
+    parameters = dict(
+        tileset='default',
+        landcover='landcover-bdt',
+        output='ax_continuity_variant',
+        variant='WEIGHTED'
+    )
 
-    CorridorMask(
+    start_time = PrintCommandInfo('distance weighted landcover continuity analysis', axis, processes, parameters)
+
+    LateralContinuity(
         axis=axis,
-        buffer_width=width,
-        ax_tiles='ax_shortest_tiles',
-        processes=processes)
+        processes=processes,
+        **parameters
+    )
+
+    buildvrt('default', 'ax_continuity_variant', axis=axis, variant='WEIGHTED')
 
     elapsed = time.time() - start_time
     click.secho('Elapsed time   : %s' % pretty_time_delta(elapsed))
+
+# @cli.command()
+# @arg_axis
+# @click.option('--width', '-b', default=40.0, help='buffer width in pixels')
+# @parallel_opt
+# def corridor_mask(axis, width, processes):
+#     """
+#     Calculate natural/reversible corridor
+#     """
+
+#     from .CorridorMask import CorridorMask
+
+#     start_time = PrintCommandInfo(
+#         'natural corridor mask',
+#         axis,
+#         processes,
+#         dict(buffer_width=width))
+
+#     CorridorMask(
+#         axis=axis,
+#         buffer_width=width,
+#         ax_tiles='ax_shortest_tiles',
+#         processes=processes)
+
+#     elapsed = time.time() - start_time
+#     click.secho('Elapsed time   : %s' % pretty_time_delta(elapsed))
+
+# @cli.command()
+# @arg_axis
+# def valley_bottom_boundary(axis):
+#     """
+#     Pseudo valley bottom boundary
+#     """
+
+#     from .ValleyBottomBoundary import ValleyBottomBoundary
+
+#     start_time = PrintCommandInfo(
+#         'valley bottom boundary',
+#         axis,
+#         1)
+
+#     ValleyBottomBoundary(axis)
+
+#     elapsed = time.time() - start_time
+#     click.secho('Elapsed time   : %s' % pretty_time_delta(elapsed))
 
 @cli.command()
 @arg_axis
-def valley_bottom_boundary(axis):
-    """
-    Pseudo valley bottom boundary
-    """
+@parallel_opt
+# @click.option('--maxiter', '-it', default=10, help='Stop after max iterations')
+# @click.option('--infra/--no-infra', default=True, help='Account for infrastructures in space fragmentation')
+def continuity_remap(axis, processes):
 
-    from .ValleyBottomBoundary import ValleyBottomBoundary
+    from ..continuity.RemapContinuityRaster import RemapContinuityRaster
 
-    start_time = PrintCommandInfo(
-        'valley bottom boundary',
-        axis,
-        1)
+    RemapContinuityRaster(axis, processes, variant='MAX')
+    buildvrt(
+        'default',
+        'ax_continuity_variant_remapped',
+        axis=axis,
+        variant='MAX'
+    )
 
-    ValleyBottomBoundary(axis)
-
-    elapsed = time.time() - start_time
-    click.secho('Elapsed time   : %s' % pretty_time_delta(elapsed))
+    RemapContinuityRaster(axis, processes, variant='WEIGHTED')
+    buildvrt(
+        'default',
+        'ax_continuity_variant_remapped',
+        axis=axis,
+        variant='WEIGHTED'
+    )

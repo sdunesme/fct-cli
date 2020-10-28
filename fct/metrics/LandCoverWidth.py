@@ -46,6 +46,19 @@ def swath_width(swath_area_pixels, unit_width, long_length, resolution):
 def LandCoverWidth(axis, method, datasets, swath_length=200.0, resolution=5.0, **kwargs):
     """
     Aggregate landCover swath data
+
+    @api    fct-metrics:landcover-width
+
+    @input  landcover: ax_continuity
+    @input  swath_polygons: ax_valley_swaths_polygons
+    @input  swath_profile_landcover: ax_swath_landcover_npz
+
+    @param  method
+    @param  swath_length: 200.0
+    @param  raster_resolution: 5.0
+    @param  landcover_classes: 9
+
+    @output landcover_width: metrics_landcover_width
     """
 
     swath_shapefile = config.filename(datasets.swath_features, axis=axis, **kwargs)
@@ -181,7 +194,7 @@ def LandCoverWidth(axis, method, datasets, swath_length=200.0, resolution=5.0, *
 
     # Metadata
 
-    set_metadata(dataset, 'metrics_landcover_width')
+    set_metadata(dataset, 'metrics_width_landcover')
 
     # Extra metadata
 
@@ -203,7 +216,7 @@ def LandCoverTotalWidth(axis, subset='landcover', swath_length=200.0, resolution
 
     datasets = DatasetParameter(
         landcover='',
-        swath_features='ax_valley_swaths_polygons',
+        swath_features='ax_swaths_refaxis_polygons',
         swath_data='ax_swath_landcover_npz'
     )
 
@@ -225,7 +238,7 @@ def ContinuousBufferWidth(axis, subset='continuity', swath_length=200.0, resolut
 
     datasets = DatasetParameter(
         landcover='',
-        swath_features='ax_valley_swaths_polygons',
+        swath_features='ax_swaths_refaxis_polygons',
         swath_data='ax_swath_landcover_npz'
     )
 

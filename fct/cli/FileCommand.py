@@ -23,8 +23,12 @@ from ..config import config
 from .. import __version__ as version
 
 from .Options import (
-    overwritable
+    overwritable,
+    arg_axis,
+    parallel_opt
 )
+
+# pylint: disable=import-outside-toplevel
 
 @click.group()
 def cli():
@@ -41,7 +45,7 @@ def rename_fileset(source, destination, overwrite):
     Rename fileset
     """
 
-    config.default()
+    config.auto()
 
     src = config.filename(source)
     dest = config.filename(destination)
@@ -76,7 +80,7 @@ def copy_fileset(source, destination, overwrite):
     Rename fileset
     """
 
-    config.default()
+    config.auto()
 
     src = config.filename(source)
     dest = config.filename(destination)
@@ -121,3 +125,35 @@ def delete_fileset(name):
     src = os.path.splitext(src)[0]
     for match in glob.glob(src + '.*'):
         os.unlink(match)
+
+@cli.command()
+@arg_axis
+def backup(axis):
+    """
+    Backup valley medial axis and valley mask from swaths raster
+    """
+
+    from .Backup import (
+        BackupMedialAxis,
+        BackupSwathPolygons,
+        BackupValleyMask
+    )
+
+    config.auto()
+
+    BackupMedialAxis(axis)
+    BackupSwathPolygons(axis)
+    BackupValleyMask(axis)
+
+@cli.command()
+@arg_axis
+@parallel_opt
+def backup_hand(axis, processes):
+    """
+    Backup valley medial axis and valley mask from swaths raster
+    """
+
+    from .Backup import BackupHeightAboveNearestDrainage
+
+    config.auto()
+    BackupHeightAboveNearestDrainage(axis, processes)

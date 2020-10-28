@@ -264,7 +264,8 @@ def cli(processes):
     Calculate landcover raster layer
     """
 
-    config.default()
+    # config.default()
+    config.auto()
     tileset = config.tileset()
 
     click.secho('Command        : %s' % 'rasterize landcover', fg='green')

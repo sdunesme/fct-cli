@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Valley Bottom Medial Axis
+Swath Medial Axis
 
 ***************************************************************************
 *                                                                         *
@@ -29,10 +29,10 @@ from ..config import config
 from ..tileio import as_window
 from ..cli import starcall
 
-def SwathMedialAxis(axis, swid, coordm, bounds, long_length, resolution):
+def SwathMedialPoints(axis, swid, coordm, bounds, long_length, resolution):
 
     tileset = config.tileset()
-    swath_shapefile = config.filename('ax_valley_swaths_polygons', axis=axis)
+    swath_shapefile = config.filename('ax_swaths_refaxis_polygons', axis=axis)
     # swath_raster = tileset.filename('ax_valley_swaths', axis=axis)
     # measure_raster = tileset.filename('ax_axis_measure', axis=axis)
     distance_raster = tileset.filename('ax_axis_distance', axis=axis)
@@ -117,6 +117,9 @@ def SwathMedialAxis(axis, swid, coordm, bounds, long_length, resolution):
     ybinned = np.digitize(distance, ybins)
     y = 0.5*(ybins[1:] + ybins[:-1])
 
+    if len(y) < 2:
+        return points
+
     # unit width of observations
     unit_width = 0.5 * (np.roll(y, -1) - np.roll(y, 1))
     unit_width[0] = y[1] - y[0]
@@ -161,10 +164,28 @@ def SwathMedialAxis(axis, swid, coordm, bounds, long_length, resolution):
 
     return points
 
-def ValleyMedialAxis(axis, processes=1, **kwargs):
+def SwathMedialAxis(axis, processes=1, **kwargs):
+    """
+    Calculate swath medial axis
 
-    swath_defs = config.filename('ax_valley_swaths_bounds', axis=axis)
-    
+    @api    fct-swath:medialaxis
+
+    @input  swath_bounds: ax_valley_swaths_bounds
+    @input  reference_axis: ax_refaxis
+    @input  swath_raster: ax_valley_swaths
+    @input  swath_polygons: ax_valley_swaths_polygons
+    @input  mask: ax_valley_mask_refined
+    @input  height: ax_nearest_height
+    @param  value_is_valid: 2
+    @param  max_height: 10.0
+    @param  min_slice_width: 10.0
+    @param  max_slice_count: 200
+
+    @output medialaxis: ax_valley_medialaxis
+    """
+
+    swath_defs = config.filename('ax_swaths_refaxis_bounds', axis=axis)
+
     long_length = 200.0
     resolution = 5.0
 
@@ -178,7 +199,7 @@ def ValleyMedialAxis(axis, processes=1, **kwargs):
 
         for k in range(length):
 
-            coordm = defs['measure'].values[k]
+            measure = defs['measure'].values[k]
             swid = defs['swath'].values[k]
             bounds = tuple(defs['bounds'].values[k, :])
 
@@ -186,10 +207,10 @@ def ValleyMedialAxis(axis, processes=1, **kwargs):
             #     continue
 
             yield (
-                SwathMedialAxis,
+                SwathMedialPoints,
                 axis,
                 swid,
-                coordm,
+                measure,
                 bounds,
                 long_length,
                 resolution,
@@ -265,10 +286,10 @@ def unproject(axis, points):
 
     return transformed
 
-def ExportValleyMedialAxisToShapefile(axis, transformed):
+def ExportSwathMedialAxisToShapefile(axis, transformed):
 
     refaxis_shapefile = config.filename('ax_refaxis', axis=axis)
-    medialaxis_shapefile = config.filename('ax_valley_medialaxis', axis=axis)
+    medialaxis_shapefile = config.filename('ax_medialaxis', mod=False, axis=axis)
 
     with fiona.open(refaxis_shapefile) as fs:
 
@@ -298,12 +319,12 @@ def test(axis=2):
     from ..plotting.Command import SetupMeasureAxis, SetupPlot, FinalizePlot
 
     config.default()
-    medialaxis = ValleyMedialAxis(axis, processes=6)
+    medialaxis = SwathMedialAxis(axis, processes=6)
 
     data = xr.Dataset({'dist': ('measure', medialaxis[:, 1])}, coords={'measure': medialaxis[:, 0]})
     smoothed = data.rolling(measure=5, center=True, min_periods=1).mean()
     transformed = unproject(axis, np.column_stack([smoothed.measure, smoothed.dist]))
-    ExportValleyMedialAxisToShapefile(axis, transformed[~np.isnan(transformed[:, 1])])
+    ExportSwathMedialAxisToShapefile(axis, transformed[~np.isnan(transformed[:, 1])])
 
     # plt.plot(smoothed.measure, smoothed.dist)
     # plt.show()

@@ -34,7 +34,7 @@ def SwathDrainageArea(k, axis, swid, bounds, **kwargs):
     """
 
     accumulation_raster = config.tileset().filename('acc')
-    swath_raster = config.tileset().filename('ax_valley_swaths', axis=axis, **kwargs)
+    swath_raster = config.tileset().filename('ax_swaths_refaxis', axis=axis, **kwargs)
 
 
     with rio.open(accumulation_raster) as ds:
@@ -67,9 +67,17 @@ def MetricDrainageArea(axis, processes, **kwargs):
     -------
 
     drainage_area: upstream drainage area in km²
+
+    @api    fct-metrics:drainage-area
+
+    @input  accumulation: acc
+    @input  swath_polygons: ax_valley_swaths_polygons
+    @input  swath_raster: ax_valley_swaths
+
+    @output drainage_area: metrics_drainage_area
     """
 
-    swath_features = config.filename('ax_valley_swaths_polygons', axis=axis, **kwargs)
+    swath_features = config.filename('ax_swaths_refaxis_polygons', axis=axis, **kwargs)
 
     with fiona.open(swath_features) as fs:
 
