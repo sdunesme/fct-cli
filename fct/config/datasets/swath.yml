@@ -143,6 +143,15 @@ swath_landcover:
   subdir: AXES/AX%(axis)04d/METRICS
   filename: SWATHS_LANDCOVER_%(subset)s.nc
 
+swath_multilandcover:
+  description: |
+    MultiLandCover swath profiles (netCDF archive)
+  type: netcdf
+  group: metrics
+  status: final
+  subdir: AXES/AX%(axis)04d/METRICS
+  filename: SWATH_MULTILANDCOVER_%(subset)s.nc
+
 swath_continuity:
   description: |
     LandCover swath profiles (netCDF archive)

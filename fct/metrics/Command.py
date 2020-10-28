@@ -13,6 +13,8 @@ Metrics Calculation Commands
 ***************************************************************************
 """
 
+import glob
+import re
 import click
 
 from .LandCover import MkLandCoverTiles
@@ -24,6 +26,7 @@ from ..subgrid.SubGrid import (
     DominantLandCover
 )
 
+from ..config import config
 from ..cli import (
     fct_entry_point,
     fct_command,
@@ -41,17 +44,18 @@ def cli(env):
 
 @fct_command(cli)
 @click.option('--processes', '-j', default=1, help="Execute j parallel processes")
-def data_landcover(processes=1):
+@click.option('--landcoverset', '-lc', default='landcover-cesbio', help='landcover dataset')
+def data_landcover(processes=1, landcoverset='landcover-cesbio'):
     """
     Reclass landcover data and create landcover tiles
     """
 
-    MkLandCoverTiles(processes)
+    MkLandCoverTiles(processes, landcoverset=landcoverset)
 
 @fct_command(cli)
 @click.argument('variable')
 @click.argument('destination')
-@click.option('--landcoverset', '-lc', default='landcover-bdt')
+@click.option('--landcoverset', '-lc', default='landcover-bdt', help='landcover dataset')
 @click.option('--processes', '-j', default=1, help="Execute j parallel processes")
 def data_population(variable, destination, landcoverset, processes=1):
     """
@@ -210,7 +214,8 @@ def valleybottom_width(axis):
 
 @fct_command(cli)
 @arg_axis
-def landcover_width(axis):
+@click.option('--landcoverset', '-lc', default='landcover-bdt', help='landcover dataset')
+def landcover_width(axis, landcoverset):
     """
     Calculate landcover width metrics
     """
@@ -221,35 +226,39 @@ def landcover_width(axis):
         WriteLandCoverWidth
     )
 
-    datasets = DatasetParameter(
-        landcover='landcover-bdt',
-        swath_features='ax_swaths_refaxis_polygons',
-        swath_data='ax_swath_landcover_npz'
-    )
     method = 'total landcover width'
-    subset = 'TOTAL'
-    data = LandCoverWidth(axis, method, datasets, subset=subset)
-    WriteLandCoverWidth(axis, data, output='metrics_width_landcover', variant=subset)
 
-    # datasets = DatasetParameter(
-    #     # landcover='ax_corridor_mask',
-    #     landcover='ax_continuity',
-    #     swath_features='ax_swaths_refaxis_polygons',
-    #     swath_data='ax_swath_landcover_npz'
-    # )
-    # method = 'continuous buffer width from river channel'
-    # data = LandCoverWidth(axis, method, datasets, subset='MAX')
-    # WriteLandCoverWidth(axis, data, output='metrics_width_continuity', variant='RAW_MAX')
+    if config.dataset(landcoverset).properties['multitemporal']:
+        template = config.filename(landcoverset)
+        globexpr = template % {'idx': '*'}
+        reexpr = template % {'idx': '(.*?)_(.*)'}
+        vrts = glob.glob(globexpr)
+        indexes = [re.search(reexpr, t).group(1) for t in vrts]
+        subsets = ["%s_%s" % (config.dataset(landcoverset).properties['subset'], idx) for idx in indexes]
 
-    # datasets = DatasetParameter(
-    #     # landcover='ax_corridor_mask',
-    #     landcover='ax_continuity',
-    #     swath_features='ax_swaths_refaxis_polygons',
-    #     swath_data='ax_swath_landcover_npz'
-    # )
-    # method = 'continuous buffer width from river channel'
-    # data = LandCoverWidth(axis, method, datasets, subset='WEIGHTED')
-    # WriteLandCoverWidth(axis, data, output='metrics_width_continuity', variant='RAW_WEIGHTED')
+        for subset, date in zip(subsets, indexes):
+            click.echo('Subdataset: %s' % (subset))
+
+            datasets = DatasetParameter(
+                landcover=landcoverset,
+                swath_features='ax_swaths_refaxis_polygons',
+                swath_data='ax_swath_landcover_npz'
+            )
+            subset = subset
+            data = LandCoverWidth(axis, method, datasets, subset=subset, idx=date)
+            WriteLandCoverWidth(axis, data, output='metrics_width_landcover', variant=subset, idx=date)
+
+    else:
+        subset = config.dataset(landcoverset).properties['subset']
+
+        datasets = DatasetParameter(
+            landcover=landcoverset,
+            swath_features='ax_swaths_refaxis_polygons',
+            swath_data='ax_swath_landcover_npz'
+        )
+        subset = subset
+        data = LandCoverWidth(axis, method, datasets, subset=subset)
+        WriteLandCoverWidth(axis, data, output='metrics_width_landcover', variant=subset)
 
 @fct_command(cli)
 @arg_axis

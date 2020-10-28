@@ -61,6 +61,7 @@ ax_continuity:
   group: corridor
   status: final
   subdir: AXES/AX%(axis)04d
+  subset: CONT_BDT
   filename: LANDCOVER_CONTINUITY.vrt
   tiles:
     tileset: landcover

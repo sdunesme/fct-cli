@@ -42,7 +42,7 @@ with rio.open(RGE) as ds:
     # tile_height = height // 20
     # tile_width = width // 10
 
-    with fiona.open('/media/crousson/Backup/PRODUCTION/RGEALTI/RATILES.shp', 'w', **options) as dst:
+    with fiona.open('/home/sdunesme/Donnees/RGEALTI5M/BV_Isere/RGEALTI_TILES.shp', 'w', **options) as dst:
         for i in range(0, height, tile_height):
             for j in range(0, width, tile_width):
                 w = Window(j, i, tile_width, tile_height)

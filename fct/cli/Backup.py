@@ -48,18 +48,19 @@ def BackupSwathPolygons(axis):
     sourcefile = config.filename('ax_swaths_medialaxis_polygons_simplified', axis=axis)
     destination = config.filename('backup_swaths_polygons_simplified', axis=axis)
 
-    with fiona.open(sourcefile) as fs:
+    if os.path.isfile(sourcefile):
+        with fiona.open(sourcefile) as fs:
 
-        options = dict(
-            driver=fs.driver,
-            crs=fs.crs,
-            schema=fs.schema
-        )
+            options = dict(
+                driver=fs.driver,
+                crs=fs.crs,
+                schema=fs.schema
+            )
 
-        with fiona.open(destination, 'w', **options) as fst:
-            with click.progressbar(fs) as iterator:
-                for feature in iterator:
-                    fst.write(feature)
+            with fiona.open(destination, 'w', **options) as fst:
+                with click.progressbar(fs) as iterator:
+                    for feature in iterator:
+                        fst.write(feature)
 
 def BackupValleyMask(axis):
 

@@ -4,6 +4,8 @@
 Command Line Interface for Corridor Module
 """
 
+import glob
+import re
 import numpy as np
 import click
 import xarray as xr
@@ -16,6 +18,7 @@ from ..cli import (
 )
 
 from ..tileio import buildvrt
+from ..config import config
 
 # pylint: disable=import-outside-toplevel,unused-argument
 
@@ -44,14 +47,12 @@ def discretize(axis, length, medialaxis, processes):
         VectorizeSwathPolygons
     )
 
+    parameters = ValleyBottomParameters()
+    parameters.update(mdelta=length, ax_tiles='ax_shortest_tiles')
+
     if medialaxis:
 
         parameters = ValleyMedialAxisParameters()
-        parameters.update(mdelta=length, ax_tiles='ax_shortest_tiles')
-
-    else:
-
-        parameters = ValleyBottomParameters()
         parameters.update(mdelta=length, ax_tiles='ax_shortest_tiles')
 
     click.secho('Disaggregate valley bottom', fg='cyan')
@@ -356,28 +357,44 @@ def export_valleybottom_to_netcdf(axis):
 
 @fct_command(profile, 'landcover swath profiles', name='landcover')
 @arg_axis
+@click.option('--landcoverset', '-lc', default='landcover-bdt', help='landcover dataset')
 @parallel_opt
-def landcover_swath(axis, processes):
+def landcover_swath(axis, landcoverset, processes):
     """
     Calculate landcover swaths
     """
 
     from .LandCoverSwathProfile import LandCoverSwathProfile
 
-    LandCoverSwathProfile(
-        axis,
-        processes=processes,
-        landcover='ax_landcover',
-        # valley_bottom_mask='ax_valley_mask_refined',
-        subset='TOTAL')
+    if config.dataset(landcoverset).properties['multitemporal']:
+        template = config.filename(landcoverset)
+        globexpr = template % {'idx': '*'}
+        reexpr = template % {'idx': '(.*?)_(.*)'}
+        vrts = glob.glob(globexpr)
+        indexes = [re.search(reexpr, t).group(1) for t in vrts]
+        subsets = ["%s_%s" % (config.dataset(landcoverset).properties['subset'], idx) for idx in indexes]
 
-    # LandCoverSwathProfile(
-    #     axis,
-    #     processes=processes,
-    #     # landcover='ax_corridor_mask',
-    #     landcover='ax_continuity_variant',
-    #     variant='MAX',
-    #     subset='MAX')
+        for subset, date in zip(subsets, indexes):
+            click.echo('Subdataset: %s' % (subset))
+
+            LandCoverSwathProfile(
+                axis,
+                processes=processes,
+                landcover=landcoverset,
+                #valley_bottom_mask='ax_valley_mask_refined',
+                subset=subset,
+                idx=date
+            )
+
+    else: 
+        subset = config.dataset(landcoverset).properties['subset']
+
+        LandCoverSwathProfile(
+            axis,
+            processes=processes,
+            landcover=landcoverset,
+            #valley_bottom_mask='ax_valley_mask_refined',
+            subset=subset)
 
     # LandCoverSwathProfile(
     #     axis,
@@ -392,24 +409,40 @@ def landcover_swath(axis, processes):
     'export landcover swath profiles to netcdf',
     name='landcover')
 @arg_axis
-def export_landcover_to_netcdf(axis):
+@click.option('--landcoverset', '-lc', default='landcover-bdt', help='landcover dataset')
+def export_landcover_to_netcdf(axis, landcoverset):
     """
     Export landcover swath profiles to netCDF format
     """
 
     from .LandCoverSwathProfile import ExportLandcoverSwathsToNetCDF
 
-    ExportLandcoverSwathsToNetCDF(
-        axis,
-        landcover='ax_landcover',
-        subset='TOTAL'
-    )
+    if config.dataset(landcoverset).properties['multitemporal']:
+        template = config.filename(landcoverset)
+        globexpr = template % {'idx': '*'}
+        reexpr = template % {'idx': '(.*?)_(.*)'}
+        vrts = glob.glob(globexpr)
+        indexes = [re.search(reexpr, t).group(1) for t in vrts]
+        subsets = ["%s_%s" % (config.dataset(landcoverset).properties['subset'], idx) for idx in indexes]
 
-    # ExportLandcoverSwathsToNetCDF(
-    #     axis,
-    #     landcover='ax_continuity',
-    #     subset='MAX'
-    # )
+        for subset, date in zip(subsets, indexes):
+            click.echo('Subdataset: %s' % (subset))
+
+            ExportLandcoverSwathsToNetCDF(
+                axis,
+                landcover=landcoverset,
+                subset=subset,
+                idx=date
+            )
+
+    else:
+        subset = config.dataset(landcoverset).properties['subset']
+
+        ExportLandcoverSwathsToNetCDF(
+            axis,
+            landcover=landcoverset,
+            subset=subset
+        )
 
     # ExportLandcoverSwathsToNetCDF(
     #     axis,

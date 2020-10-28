@@ -93,11 +93,23 @@ def ValleyBottomSwath(
 
     #     window = as_window(bounds, ds.transform)
     #     landcover = ds.read(1, window=window, boundless=True, fill_value=ds.nodata)
+        heights = np.arange(5.0, 15.5, 0.5)
 
-        assert hand.shape == mask.shape
-        assert axis_distance.shape == mask.shape
-        assert nearest_distance.shape == mask.shape
-        # assert mask.shape == landcover.shape
+        try:
+            assert hand.shape == mask.shape
+            assert axis_distance.shape == mask.shape
+            assert nearest_distance.shape == mask.shape
+            # assert mask.shape == landcover.shape
+        except AssertionError:
+            #TODO: Explain why this is in error
+            click.secho('Error on swath (%d, %d)' % (axis, gid), fg='yellow')
+            values = dict(
+                x=np.zeros(0, dtype='float32'),
+                valley_bottom_area_lr=np.zeros(2, dtype='uint32'),
+                valley_bottom_area_h = np.zeros(len(heights), dtype='uint32'),
+                valley_bottom_swath=np.zeros((0, 0), dtype='float32')
+            )
+            return gid, values  
 
         heights = np.arange(5.0, 15.5, 0.5)
 

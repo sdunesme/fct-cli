@@ -23,12 +23,22 @@ import fiona
 
 from ..cli import starcall
 from ..config import config
+from ..config.Configuration import (
+    DataSource,
+    MultiDataSource
+)
 from ..tileio import as_window
 
-def MkLandCoverTile(tile):
+def MkLandCoverTile(tile, landcoversrc='landcover', landcoverset='landcover-cesbio'):
+
+    if landcoversrc:
+        landcover_raster = config.datasource(landcoversrc).filename
+        landcover_idx = config.datasource(landcoversrc).idx
+    else:
+        landcover_raster = config.datasource('landcover').filename
+        landcover_idx = None
 
     template_raster = config.datasource('dem').filename
-    landcover_raster = config.datasource('landcover').filename
     mapping_file = config.datasource('landcover-mapping').filename
 
     headers = None
@@ -56,9 +66,10 @@ def MkLandCoverTile(tile):
         return out
 
     output = config.tileset().tilename(
-        'landcover-cesbio',
+        landcoverset,
         row=tile.row,
-        col=tile.col)
+        col=tile.col,
+        idx=landcover_idx)
 
     with rio.open(template_raster) as template:
 
@@ -90,6 +101,7 @@ def MkLandCoverTile(tile):
             data = reclass(data, ds.nodata, 255)
 
             profile.update(
+                driver='GTiff',
                 height=height,
                 width=width,
                 nodata=255,
@@ -106,7 +118,11 @@ def MkLandCoverTiles(processes=1, **kwargs):
     # tile_shapefile = os.path.join(workdir, 'TILESET', 'GRILLE_10K.shp')
     tiles = config.tileset().tileindex
 
-    arguments = [(MkLandCoverTile, tile, kwargs) for tile in tiles.values()]
+    if type(config.datasource('landcover'))==DataSource:
+        arguments = [(MkLandCoverTile, tile, kwargs) for tile in tiles.values()]
+    elif type(config.datasource('landcover'))==MultiDataSource:
+        datasources = config.datasource('landcover').datasources
+        arguments = [(MkLandCoverTile, tile, landcoversrc, kwargs) for tile in tiles.values() for landcoversrc in datasources]
 
     with Pool(processes=processes) as pool:
 
