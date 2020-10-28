@@ -58,7 +58,7 @@ fct-corridor shortest-height -j 32 $axe
 fct-corridor hand -j 32 $axe
 fct-corridor valleymask -j 32 $axe
 fct-swath discretize -j 32 $axe
-fct-corridor medialaxis $axe
+fct-corridor medialaxis $axe    
 # fct-swath discretize -j 8 --medialaxis True $axe
 fct-swath discretize --talweg True -j 32 $axe # Customisé par Samuel. A confirmer avec Christophe
 # Refaire les DGO sur l'axe de référence
@@ -76,6 +76,7 @@ fct-metrics landcover-width -lc landcover-hmvt -m total 207
 fct-historical merge_landcover -ds swath_landcover 207
 fct-historical merge_landcover -ds metrics_lcw_variant 207
 
+fct-swath valleybottom -j 32 207
 fct-metrics valleybottom-width 207
 fct-plot landcover-profile-lr 207
 

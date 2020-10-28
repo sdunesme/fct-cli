@@ -96,10 +96,10 @@ def ValleyBottomSwath(
         heights = np.arange(5.0, 15.5, 0.5)
 
         try:
-        assert hand.shape == mask.shape
-        assert axis_distance.shape == mask.shape
-        assert nearest_distance.shape == mask.shape
-        # assert mask.shape == landcover.shape
+            assert hand.shape == mask.shape
+            assert axis_distance.shape == mask.shape
+            assert nearest_distance.shape == mask.shape
+            # assert mask.shape == landcover.shape
         except AssertionError:
             #TODO: Explain why this is in error
             click.secho('Error on swath (%d, %d)' % (axis, gid), fg='yellow')
