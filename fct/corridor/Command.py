@@ -231,7 +231,8 @@ def valleymask(axis, vrt, processes):
 
 @cli.command()
 @arg_axis
-def medialaxis(axis):
+@click.option('--simplify', default=False, is_flag=True, help='simplify and smooth medial axis')
+def medialaxis(axis, simplify):
     """
     Calculate corridor medial axis
     """
@@ -245,6 +246,13 @@ def medialaxis(axis):
         {})
 
     MedialAxis(axis)
+
+    if simplify:
+        
+        from .SimplifyMedialAxis import SimplifyMedialAxis
+
+        maskfile = config.tileset().filename('ax_swaths_refaxis', axis=axis)
+        SimplifyMedialAxis(axis, 2000, maskfile)
 
     elapsed = time.time() - start_time
     click.secho('Elapsed time   : %s' % pretty_time_delta(elapsed))
