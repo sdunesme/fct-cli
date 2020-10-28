@@ -43,7 +43,7 @@ def swath_width(swath_area_pixels, unit_width, long_length, resolution):
 
     return width
 
-def LandCoverWidth(axis, method, datasets, swath_length=200.0, resolution=5.0, **kwargs):
+def ContinuityWidth(axis, method, datasets, swath_length=200.0, resolution=5.0, **kwargs):
     """
     Aggregate landCover swath data
 
@@ -64,14 +64,15 @@ def LandCoverWidth(axis, method, datasets, swath_length=200.0, resolution=5.0, *
     swath_shapefile = config.filename(datasets.swath_features, axis=axis, **kwargs)
 
     pixel_area = resolution**2
+    num_classes = 6
 
     with fiona.open(swath_shapefile) as fs:
 
         size = len(fs)
         swathids = np.zeros(size, dtype='uint32')
         measures = np.zeros(size, dtype='float32')
-        buffer_area = np.zeros((size, 9, 2), dtype='float32')
-        buffer_width = np.zeros((size, 9, 2), dtype='float32')
+        buffer_area = np.zeros((size, num_classes, 2), dtype='float32')
+        buffer_width = np.zeros((size, num_classes, 2), dtype='float32')
         valid = np.full(size, True)
 
         with click.progressbar(fs) as iterator:
@@ -123,10 +124,14 @@ def LandCoverWidth(axis, method, datasets, swath_length=200.0, resolution=5.0, *
 
                 # per landcover class corridor widths
 
+                klass_labels = [1, 10, 20, 30, 40, 50]
+
                 for k, klass in enumerate(classes):
 
                     if klass == 255:
                         continue
+
+                    klass_index = klass_labels.index(klass)
 
                     # 1. Total width
 
@@ -145,13 +150,13 @@ def LandCoverWidth(axis, method, datasets, swath_length=200.0, resolution=5.0, *
 
                     # aggregate pixel area by slice (class k, side)
                     area_pixels_k_lr = np.sum(landcover_swath[:, k, :], axis=0)
-                    buffer_area[i, klass, :] = area_pixels_k_lr * pixel_area
+                    buffer_area[i, klass_index, :] = area_pixels_k_lr * pixel_area
 
                     # 3. Left & right bank width
 
                     area_pixels_k_total = np.sum(area_pixels_k_lr, axis=0)
 
-                    buffer_width[i, klass, :] = (
+                    buffer_width[i, klass_index, :] = (
                         area_pixels_k_lr * width_total
                         / area_pixels_k_total
                     )
@@ -169,22 +174,30 @@ def LandCoverWidth(axis, method, datasets, swath_length=200.0, resolution=5.0, *
     dataset = xr.Dataset(
         {
             'swath': ('measure', swathids[valid]),
-            'buffer_area': (('measure', 'landcover', 'side'), buffer_area[valid]),
-            'buffer_width': (('measure', 'landcover', 'side'), buffer_width[valid])
+            'buffer_area': (('measure', 'continuity', 'side'), buffer_area[valid]),
+            'buffer_width': (('measure', 'continuity', 'side'), buffer_width[valid])
         },
         coords={
             'axis': axis,
             'measure': measures[valid],
-            'landcover': [
-                'Water Channel',
-                'Gravel Bars',
-                'Natural Open',
-                'Forest',
-                'Grassland',
-                'Crops',
-                'Diffuse Urban',
-                'Dense Urban',
-                'Infrastructures'
+            # 'landcover': [
+            #     'Water Channel',
+            #     'Gravel Bars',
+            #     'Natural Open',
+            #     'Forest',
+            #     'Grassland',
+            #     'Crops',
+            #     'Diffuse Urban',
+            #     'Dense Urban',
+            #     'Infrastructures'
+            # ],
+            'continuity': [
+                'Active channel',
+                'Riparian corridor',
+                'Semi-natural',
+                'Reversible',
+                'Disconnected',
+                'Built environment'
             ],
             'side': [
                 'left',
@@ -194,7 +207,7 @@ def LandCoverWidth(axis, method, datasets, swath_length=200.0, resolution=5.0, *
 
     # Metadata
 
-    set_metadata(dataset, 'metrics_width_landcover')
+    set_metadata(dataset, 'metrics_width_continuity')
 
     # Extra metadata
 
@@ -206,51 +219,8 @@ def LandCoverWidth(axis, method, datasets, swath_length=200.0, resolution=5.0, *
 
     return dataset
 
-def LandCoverTotalWidth(axis, subset='landcover', swath_length=200.0, resolution=5.0):
-    """
-    Defines
-    -------
 
-    lcw(k): total landcover width (meter) for land cover class k
-    """
-
-    datasets = DatasetParameter(
-        landcover='',
-        swath_features='ax_swaths_refaxis_polygons',
-        swath_data='ax_swath_landcover_npz'
-    )
-
-    return LandCoverWidth(
-        axis,
-        'total landcover width',
-        datasets,
-        swath_length=swath_length,
-        resolution=resolution,
-        subset=subset.upper())
-
-def ContinuousBufferWidth(axis, subset='continuity', swath_length=200.0, resolution=5.0):
-    """
-    Defines
-    -------
-
-    lcw(k): continuous buffer width (meter) for land cover class k
-    """
-
-    datasets = DatasetParameter(
-        landcover='',
-        swath_features='ax_swaths_refaxis_polygons',
-        swath_data='ax_swath_landcover_npz'
-    )
-
-    return LandCoverWidth(
-        axis,
-        'continuous buffer width from river channel',
-        datasets,
-        swath_length=swath_length,
-        resolution=resolution,
-        subset=subset.upper())
-
-def WriteLandCoverWidth(axis, data, output='metrics_landcover_width', **kwargs):
+def WriteContinuityWidth(axis, data, output='metrics_width_continuity', **kwargs):
 
     output = config.filename(output, axis=axis, **kwargs)
 

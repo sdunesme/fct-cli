@@ -41,6 +41,19 @@ ax_shortest_state:
     template: SHORTEST_STATE_%(row)02d_%(col)02d
     extension: .tif
 
+ax_landcover:
+  description: |
+    Landcover map
+  type: raster
+  group: corridor
+  status: final
+  subdir: AXES/AX%(axis)04d
+  filename: LANDCOVER.vrt
+  tiles:
+    tileset: landcover
+    template: LANDCOVER_%(row)02d_%(col)02d
+    extension: .tif
+
 ax_continuity:
   description: |
     Landcover continuity map
@@ -93,6 +106,32 @@ ax_continuity_variant:
     template: LANDCOVER_CONTINUITY_%(variant)s_%(row)02d_%(col)02d
     extension: .tif
 
+ax_continuity_remapped:
+  description: |
+    Interpreted landcover continuity map
+  type: raster
+  group: corridor
+  status: final
+  subdir: AXES/AX%(axis)04d
+  filename: LANDCOVER_CONTINUITY_FINAL.vrt
+  tiles:
+    tileset: landcover
+    template: LANDCOVER_CONTINUITY_FINAL_%(row)02d_%(col)02d
+    extension: .tif
+
+ax_continuity_variant_remapped:
+  description: |
+    Interpreted landcover continuity map (Variants)
+  type: raster
+  group: corridor
+  status: final
+  subdir: AXES/AX%(axis)04d
+  filename: LANDCOVER_CONTINUITY_%(variant)s_FINAL.vrt
+  tiles:
+    tileset: landcover
+    template: LANDCOVER_CONTINUITY_%(variant)s_FINAL_%(row)02d_%(col)02d
+    extension: .tif
+
 ax_valley_mask:
   description: |
     Valley mask from nearest height raster
@@ -113,10 +152,10 @@ ax_valley_mask_refined:
   group: corridor
   status: final
   subdir: AXES/AX%(axis)04d
-  filename: VALLEY_MASK2.vrt
+  filename: VALLEY_BOTTOM.vrt
   tiles:
     tileset: landcover
-    template: VALLEY_MASK2_%(row)02d_%(col)02d
+    template: VALLEY_BOTTOM_%(row)02d_%(col)02d
     extension: .tif
 
 ax_valley_height_mask:

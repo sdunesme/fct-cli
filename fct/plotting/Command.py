@@ -293,17 +293,67 @@ def plot_swath_elevation(swath, axis, kind, clip, filename):
     elif filename.endswith('.pdf'):
         mpl.use('cairo')
 
-    PlotSwath(axis, swath, kind=kind, clip=clip, output=filename)
+    if filename is None:
+
+        PlotSwath(axis, swath, kind=kind, clip=clip)
+        plt.show(block=True)
+
+    else:
+
+        PlotSwath(axis, swath, kind=kind, clip=clip, output=filename)
+
+    # 
+    #     # fig.show()
+    #     plt.show(block=True)
+    # elif filename.endswith('.pdf'):
+    #     plt.savefig(filename, format='pdf', dpi=600)
+    #     plt.clf()
+    # else:
+    #     plt.savefig(filename, dpi=300)
+    #     plt.clf()
+
+@cli.command('swath-landcover')
+@click.argument('swath', type=int)
+@arg_axis
+@click.option(
+    '--kind',
+    type=click.Choice(['std', 'continuity', 'interpreted'], case_sensitive=True),
+    default='std',
+    help="""select plot variant""")
+@filename_opt
+def plot_swath_landcover(swath, axis, kind, filename):
+    """
+    Elevation swath profile
+
+    @api   fct-plot:elevation-swath
+    @input swath_elevation_npz: ax_swath_elevation_npz
+    """
+
+    from .PlotLandCoverSwath import PlotLandCoverSwath
 
     if filename is None:
-        # fig.show()
-        plt.show(block=True)
+        plt.ion()
     elif filename.endswith('.pdf'):
-        plt.savefig(filename, format='pdf', dpi=600)
-        plt.clf()
+        mpl.use('cairo')
+
+    if filename is None:
+
+        PlotLandCoverSwath(axis, swath, kind=kind)
+        plt.show(block=True)
+
     else:
-        plt.savefig(filename, dpi=300)
-        plt.clf()
+
+        PlotLandCoverSwath(axis, swath, kind=kind, output=filename)
+
+    # if filename is None:
+    #     # fig.show()
+    #     plt.show(block=True)
+    # elif filename.endswith('.pdf'):
+    #     plt.savefig(filename, format='pdf', dpi=600)
+    #     plt.clf()
+    # else:
+    #     plt.savefig(filename, dpi=300)
+    #     plt.clf()
 
 # def plot_swath_landcover():
 
@@ -406,7 +456,7 @@ def plot_profile_slope(ctx, ax, axis, floodplain, talweg, smooth):
 
         data = data.sortby('measure', ascending=False)
         x = data['measure']
-        y = data['valley_slope']
+        y = data['slope']
         ax.plot(x, y, label='floodplain')
         SetupMeasureAxis(ax, x)
 
@@ -559,7 +609,7 @@ def plot_landcover_profile(ax, axis):
 
     from .PlotCorridor import PlotLandCoverProfile
 
-    data_file = config.filename('metrics_landcover_width', variant='TOTAL_BDT', axis=axis)
+    data_file = config.filename('metrics_width_landcover', variant='TOTAL', axis=axis)
     data = xr.open_dataset(data_file).sortby('measure')
 
     PlotLandCoverProfile(
@@ -585,7 +635,7 @@ def plot_continuity_profile(ax, axis):
 
     from .PlotCorridor import PlotLandCoverProfile
 
-    data_file = config.filename('metrics_landcover_width', variant='CONT_BDT', axis=axis)
+    data_file = config.filename('metrics_width_continuity', variant='MAX', axis=axis)
     data = xr.open_dataset(data_file).sortby('measure')
 
     PlotLandCoverProfile(
@@ -616,8 +666,8 @@ def plot_left_right_landcover_profile(ax, axis, max_class):
         PlotLeftRightCorridorLimit
     )
 
-    data_file = config.filename('metrics_landcover_width', variant='TOTAL_BDT', axis=axis)
-    width_file = config.filename('metrics_valleybottom_width', axis=axis)
+    data_file = config.filename('metrics_width_landcover', variant='TOTAL', axis=axis)
+    width_file = config.filename('metrics_width_corridor', axis=axis)
 
     width = xr.open_dataset(width_file)
     data = xr.open_dataset(data_file)
@@ -629,27 +679,29 @@ def plot_left_right_landcover_profile(ax, axis, max_class):
     vbw_left = data_vb_width * data_vb_area_lr.sel(side='left') / np.sum(data_vb_area_lr, axis=1)
     vbw_right = data_vb_width * data_vb_area_lr.sel(side='right') / np.sum(data_vb_area_lr, axis=1)
 
-    PlotLeftRightCorridorLimit(
-        ax,
-        merged,
-        merged['measure'],
-        vbw_left,
-        vbw_right,
-        window=5)
-
     PlotLeftRightLandcoverProfile(
         ax,
         merged,
         merged['measure'],
         merged['buffer_width'].sel(side='left'),
         merged['buffer_width'].sel(side='right'),
+        basis=0,
         max_class=max_class,
         clip=False,
         window=5)
 
+    PlotLeftRightCorridorLimit(
+        ax,
+        merged,
+        merged['measure'],
+        vbw_left,
+        vbw_right,
+        basis=0,
+        window=5)
+
     SetupMeasureAxis(ax, merged['measure'])
     ax.set_ylabel('Width (m)')
-    ax.legend(ncol=2)
+    ax.legend(ncol=2, loc='lower left')
 
 @fct_plot(cli, 'continuity-profile-lr', title='Left and right bank continuity buffer width')
 @arg_axis
@@ -664,12 +716,12 @@ def plot_left_right_continuity_profile(ax, axis, max_class):
     """
 
     from .PlotCorridor import (
-        PlotLeftRightLandcoverProfile,
+        PlotLeftRightLandcoverProfile2,
         PlotLeftRightCorridorLimit
     )
 
-    data_file = config.filename('metrics_landcover_width', variant='CONT_BDT', axis=axis)
-    width_file = config.filename('metrics_valleybottom_width', axis=axis)
+    data_file = config.filename('metrics_width_continuity', variant='MAX', axis=axis)
+    width_file = config.filename('metrics_width_corridor', axis=axis)
 
     width = xr.open_dataset(width_file)
     data = xr.open_dataset(data_file)
@@ -681,22 +733,25 @@ def plot_left_right_continuity_profile(ax, axis, max_class):
     vbw_left = data_vb_width * data_vb_area_lr.sel(side='left') / np.sum(data_vb_area_lr, axis=1)
     vbw_right = data_vb_width * data_vb_area_lr.sel(side='right') / np.sum(data_vb_area_lr, axis=1)
 
+    PlotLeftRightLandcoverProfile2(
+        ax,
+        merged,
+        merged['measure'],
+        merged['buffer_width'].sel(side='left'),
+        merged['buffer_width'].sel(side='right'),
+        max_class=0,
+        clip=True,
+        window=5)
+
     PlotLeftRightCorridorLimit(
         ax,
         merged,
         merged['measure'],
         vbw_left,
         vbw_right,
-        window=5)
-
-    PlotLeftRightLandcoverProfile(
-        ax,
-        merged,
-        merged['measure'],
-        merged['buffer_width'].sel(side='left'),
-        merged['buffer_width'].sel(side='right'),
-        max_class=max_class,
-        clip=True,
+        basis=0,
         window=5)
 
     SetupMeasureAxis(ax, merged['measure'])
+    ax.set_ylabel('Width (m)')
+    ax.legend(ncol=2, loc='lower left')
