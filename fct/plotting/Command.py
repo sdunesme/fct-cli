@@ -599,7 +599,8 @@ def plot_planform_amplitude(ax, axis, measure, window):
 
 @fct_plot(cli, 'landcover-profile', title='Total landcover width')
 @arg_axis
-def plot_landcover_profile(ax, axis):
+@click.option('--variant', default='TOTAL', help='metric variant')
+def plot_landcover_profile(ax, axis, variant):
     """
     Landcover class width long profile
 
@@ -609,7 +610,7 @@ def plot_landcover_profile(ax, axis):
 
     from .PlotCorridor import PlotLandCoverProfile
 
-    data_file = config.filename('metrics_width_landcover', variant='TOTAL', axis=axis)
+    data_file = config.filename('metrics_width_landcover', variant=variant, axis=axis)
     data = xr.open_dataset(data_file).sortby('measure')
 
     PlotLandCoverProfile(
@@ -652,7 +653,8 @@ def plot_continuity_profile(ax, axis):
 @fct_plot(cli, 'landcover-profile-lr', title='Left and right bank landcover width')
 @arg_axis
 @click.option('--max-class', default=8, help='Plot until max_class continuity class')
-def plot_left_right_landcover_profile(ax, axis, max_class):
+@click.option('--variant', default='TOTAL', help='metric variant')
+def plot_left_right_landcover_profile(ax, axis, max_class, variant):
     """
     Left/rigth total landcover width long profile
 
@@ -666,7 +668,7 @@ def plot_left_right_landcover_profile(ax, axis, max_class):
         PlotLeftRightCorridorLimit
     )
 
-    data_file = config.filename('metrics_width_landcover', variant='TOTAL', axis=axis)
+    data_file = config.filename('metrics_width_landcover', variant=variant, axis=axis)
     width_file = config.filename('metrics_width_corridor', axis=axis)
 
     width = xr.open_dataset(width_file)
