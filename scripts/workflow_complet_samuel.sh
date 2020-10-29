@@ -17,9 +17,12 @@ fct-drainage prepare smooth -j 8 -p --window 5
 fct-tiles buildvrt default smoothed
 fct-drainage prepare drape -ds smoothed
 
-fct-drainage watershed labels -ds smoothed -b 2.0 -j 8 -p
+# fct-drainage watershed labels -ds smoothed -b 2.0 -j 8 -p
+# fct-drainage watershed resolve
+# fct-drainage watershed dispatch -j 8 -p
+fct-drainage watershed labels -j 32
 fct-drainage watershed resolve
-fct-drainage watershed dispatch -j 8 -p
+fct-drainage watershed dispatch -j 32
 
 fct-drainage flat labels -j 8 -p
 fct-drainage flat resolve
@@ -152,17 +155,23 @@ fct-metrics landcover-width -lc landcover-hmvt $AXE # Bug possible sur les swath
 # fct-metrics continuity-width $AXE
 
 fct-historical merge-landcover -ds metrics_width_landcover $AXE
+fct-historical clean-nodata -lc landcover-hmvt -ds metrics_width_multilandcover $AXE
 
 fct-metrics planform $AXE
 
-# fct-plot landcover-profile
-# fct-plot landcover-profile-lr
+# fct-plot landcover-profile --variant HMVT_1934
+# fct-plot landcover-profile-lr --variant HMVT_1934
 # fct-plot continuity-profile
 # fct-plot continuity-profile-lr
 
 # fct-plot planform
 # fct-plot amplitude
 
+# 7. Hypsometry
+# -------------------------
+# fct-metrics hypsometry -j 32 $AXE
+
+# fct-plot hypsometry
 
 # Liste axes Isere 
-165,969,970,968,422,766,546,155,761,156,415,631,755,149,632,150,891,412,535,536,751,531,31,269,143,888,529,750,403,265,745,881,140,620,400,397,616,805,873,677,676,800,578,451,797,12,573,9,450,186,929,791,567,180,661,304,784,562,435,297,782,295,431,229,230,101,776,835,836,907,483,355,356,904,215,92,478,701,90,352,702,699,962,958,467,689,76,461,462,945,683,682,455,742,132,939,516,735,252,249,123,385,869,509,868,5,725,726,239,502,720,372,107,231,370,232,106,103,365,366,974,363,773,294
+# 165,969,970,968,422,766,546,155,761,156,415,631,755,149,632,150,891,412,535,536,751,531,31,269,143,888,529,750,403,265,745,881,140,620,400,397,616,805,873,677,676,800,578,451,797,12,573,9,450,186,929,791,567,180,661,304,784,562,435,297,782,295,431,229,230,101,776,835,836,907,483,355,356,904,215,92,478,701,90,352,702,699,962,958,467,689,76,461,462,945,683,682,455,742,132,939,516,735,252,249,123,385,869,509,868,5,725,726,239,502,720,372,107,231,370,232,106,103,365,366,974,363,773,294

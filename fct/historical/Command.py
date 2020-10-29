@@ -23,7 +23,6 @@ from ..cli import (
 )
 
 from ..config import config
-from .MergeMultitemporalDataset import MergeMultitemporalDataset
 # pylint: disable=import-outside-toplevel,unused-argument
 
 @fct_entry_point
@@ -41,6 +40,8 @@ def merge_landcover(axis, landcoverset='landcover-hmvt', dataset='metrics_width_
     Merge multiple landcover netcdf profiles
     """
 
+    from .DataPreparation import MergeMultitemporalDataset
+
     if not config.dataset(landcoverset).properties['multitemporal']:
         click.secho('Merging multiple landcover is only available for multitemporal landcover datasets', fg='yellow')
         return
@@ -52,3 +53,15 @@ def merge_landcover(axis, landcoverset='landcover-hmvt', dataset='metrics_width_
 
     MergeMultitemporalDataset(axis, landcoverset, dataset, output_dataset)
     
+@fct_command(cli)
+@arg_axis
+@click.option('--landcoverset', '-lc', default='landcover-hmvt', help='landcover multidataset')
+@click.option('--dataset', '-ds', default='metrics_width_multilandcover', help='dataset to clean')
+def clean_nodata(axis, landcoverset, dataset):
+    """
+    Remove dates with no data in metrics multilandcover datasets
+    """
+
+    from .DataPreparation import RemoveNoData
+
+    RemoveNoData(axis, landcoverset, dataset)
