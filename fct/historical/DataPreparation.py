@@ -54,7 +54,7 @@ def RemoveNoData(axis, landcoverset, metrics_dataset, **kwargs):
     filename = config.filename(metrics_dataset, axis=axis, subset=subset, **kwargs)
     
     with xr.open_dataset(filename) as input_dataset:
-        dataset = input_dataset.copy(deep=True)
+        dataset = input_dataset.load()
  
     with click.progressbar(dataset['date'].data) as iterator:
         for d in iterator:
