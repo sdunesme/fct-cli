@@ -170,6 +170,17 @@ swath_valleybottom:
   subdir: AXES/AX%(axis)04d/METRICS
   filename: SWATHS_CORRIDOR.nc
 
+# Maps for data visualisation
+
+ax_swath_multilandcover_maps:
+  description: |
+    Landcover swath map
+  type: netcdf
+  group: landcover
+  status: temporary
+  subdir: AXES/AX%(axis)04d/SWATH/LANDCOVER_MAP
+  filename: SWATH_MULTILANDCOVER_MAP_%(gid)04d_%(subset)s.nc
+
 # Unused, to be removed
 
 ax_corridor_swaths:

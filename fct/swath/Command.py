@@ -47,13 +47,12 @@ def discretize(axis, length, medialaxis, processes):
         VectorizeSwathPolygons
     )
 
-    parameters = ValleyBottomParameters()
-    parameters.update(mdelta=length, ax_tiles='ax_shortest_tiles')
-
     if medialaxis:
-
         parameters = ValleyMedialAxisParameters()
-        parameters.update(mdelta=length, ax_tiles='ax_shortest_tiles')
+    else:
+        parameters = ValleyBottomParameters()
+    
+    parameters.update(mdelta=length, ax_tiles='ax_shortest_tiles')
 
     click.secho('Disaggregate valley bottom', fg='cyan')
     swaths = DisaggregateIntoSwaths(

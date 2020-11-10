@@ -244,8 +244,15 @@ def landcover_width(axis, landcoverset):
                 swath_features='ax_swaths_refaxis_polygons',
                 swath_data='ax_swath_landcover_npz'
             )
-            subset = subset
-            data = LandCoverWidth(axis, method, datasets, subset=subset, idx=date)
+
+            data = LandCoverWidth(
+                axis, 
+                method, 
+                datasets, 
+                resolution=config.dataset(landcoverset).properties['resolution'], 
+                subset=subset, 
+                idx=date
+                )
             WriteLandCoverWidth(axis, data, output='metrics_width_landcover', variant=subset, idx=date)
 
     else:
@@ -256,8 +263,14 @@ def landcover_width(axis, landcoverset):
             swath_features='ax_swaths_refaxis_polygons',
             swath_data='ax_swath_landcover_npz'
         )
-        subset = subset
-        data = LandCoverWidth(axis, method, datasets, subset=subset)
+
+        data = LandCoverWidth(
+            axis,
+            method, 
+            datasets, 
+            resolution=config.dataset(landcoverset).properties['resolution'], 
+            subset=subset
+            )
         WriteLandCoverWidth(axis, data, output='metrics_width_landcover', variant=subset)
 
 @fct_command(cli)

@@ -65,3 +65,18 @@ def clean_nodata(axis, landcoverset, dataset):
     from .DataPreparation import RemoveNoData
 
     RemoveNoData(axis, landcoverset, dataset)
+
+@fct_command(cli)
+@arg_axis
+@click.option('--landcoverset', '-lc', default='landcover-hmvt', help='landcover multidataset')
+@click.option('--processes', '-j', default=1, help="Execute j parallel processes")
+def map_landcover(axis, landcoverset, processes):
+    """
+    Create netcdf file to map corridor historical landcover
+    """
+
+    from .MapLandcover import MapLandcover
+
+    MapLandcover(axis, landcoverset, processes)
+    
+    

@@ -9,6 +9,7 @@ dem:
   type: raster
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: DEM.vrt
   tiles:
@@ -23,6 +24,7 @@ tiled:
   type: raster
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: DEM.vrt
   tiles:
@@ -36,6 +38,7 @@ smoothed:
   type: raster
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: SMOOTHED.vrt
   tiles:
@@ -50,6 +53,7 @@ stream-network-draped:
   type: linestring
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: DRAPED_HYDROGRAPHY.shp
   tiles:
@@ -65,6 +69,7 @@ dem-filled:
   type: raster
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: FILLED.vrt
   tiles:
@@ -79,6 +84,7 @@ dem-watershed-labels:
   type: raster
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: WATERSHED_LABELS.vrt
   tiles:
@@ -93,6 +99,7 @@ dem-watershed-graph:
   type: npz
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: WATERSHED_GRAPH.npz
   tiles:
@@ -107,6 +114,7 @@ dem-watershed-spillover:
   type: npz
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: WATERSHED_SPILLOVER.npz
 
@@ -118,6 +126,7 @@ dem-filled-resolved:
   type: raster
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: RESOLVED.vrt
   tiles:
@@ -132,6 +141,7 @@ dem-flat-labels:
   type: raster
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: FLAT_LABELS.vrt
   tiles:
@@ -146,6 +156,7 @@ dem-flat-graph:
   type: npz
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: FLAT_GRAPH.npz
   tiles:
@@ -160,6 +171,7 @@ dem-flat-spillover:
   type: npz
   group: drainage
   status: temporary
+  multitemporal: False
   subdir: GLOBAL/DEM
   filename: FLAT_SPILLOVER.npz
 
@@ -170,6 +182,7 @@ dem-drainage-resolved:
     second pass: cross-tile resolution based on spillover graph
   type: raster
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: DRAINAGE_RESOLVED.vrt
@@ -184,6 +197,7 @@ depression-depth:
     depth relative to pour point elevation
   type: raster
   group: drainage
+  multitemporal: False
   status: final
   subdir: GLOBAL/DEM
   filename: DEPRESSION_DEPTH.vrt
@@ -197,6 +211,7 @@ flow:
     D8 Flow Direction, derived from DEM
   type: raster
   group: drainage
+  multitemporal: False
   status: final
   subdir: GLOBAL/DEM
   filename: FLOW.vrt
@@ -211,6 +226,7 @@ acc:
     derived from D8 Flow Direction
   type: raster
   group: drainage
+  multitemporal: False
   status: final
   subdir: GLOBAL/DEM
   filename: ACCUMULATION.vrt
@@ -225,6 +241,7 @@ outlets:
     (gid) identifies the tile of origin.
   type: point
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   tiles:
@@ -237,6 +254,7 @@ outlets-glob:
     Tile outlets, per target tile glob pattern
   type: point
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   tiles:
@@ -250,6 +268,7 @@ inlets:
     Tile flow inlets
   type: point
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: INLETS.shp
@@ -263,6 +282,7 @@ inlet-areas:
     Tile flow inlets
     with calculated upstream area contribution
   type: point
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: INLET_AREAS.shp
@@ -276,6 +296,7 @@ inlet-sources:
     Cross-tile stream connections
   type: point
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: SOURCES.shp
@@ -289,6 +310,7 @@ dem-drainage-network:
     Theoretical stream network derived from DEM
   type: linestring
   group: drainage
+  multitemporal: False
   status: final
   subdir: GLOBAL/DEM
   filename: DRAINAGE.shp
@@ -305,6 +327,7 @@ streams-from-sources:
     derived from DEM and mapped sources
   type: linestring
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: RHTS_NOATTR.shp
@@ -318,6 +341,7 @@ drainage-raster-from-sources:
     Rasterization of streams-from-sources
   type: raster
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: RHTS_RASTER.vrt
@@ -332,6 +356,7 @@ sources:
     with mapped sources attributes
   type: point
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: RHTS_SOURCES.shp
@@ -342,6 +367,7 @@ streams-attr:
     (axis identifier, axis length, Hack and Strahler order)
   type: linestring
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: RHTS_ATTR.shp
@@ -360,6 +386,7 @@ streams:
     with attributes from mapped river network
   type: linestring
   group: drainage
+  multitemporal: False
   status: final
   subdir: GLOBAL/DEM
   filename: RHTS.shp
@@ -369,6 +396,7 @@ streams-tiled:
     Stream network aggregated by axis and tiles
   type: linestring
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL
   filename: STREAMS.shp
@@ -378,6 +406,7 @@ noflow:
     No flow pixels to be fixed in flow raster
   type: point
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: NOFLOW.shp
@@ -391,6 +420,7 @@ noflow-targets:
     No flow pixels' resolved downstream connections
   type: point
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: NOFLOW_TARGETS.shp
@@ -401,6 +431,7 @@ noflow-from-sources:
     in drainage network from mapped sources
   type: point
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: NOFLOW_RHTS.shp
@@ -414,6 +445,7 @@ noflow-targets-from-sources:
     No flow pixels' resolved downstream connections
   type: point
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: GLOBAL/DEM
   filename: NOFLOW_RHTS_TARGETS.shp
@@ -423,6 +455,7 @@ ax_watershed_raster:
     Watershed delineation
   type: raster
   group: drainage
+  multitemporal: False
   status: temporary
   subdir: AXES/AX%(axis)04d
   filename: WATERSHED.vrt
@@ -436,6 +469,7 @@ ax_watershed:
     Watershed delineation
   type: polygon
   group: drainage
+  multitemporal: False
   status: final
   subdir: AXES/AX%(axis)04d
   filename: WATERSHED.shp

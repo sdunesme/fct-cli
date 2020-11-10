@@ -18,6 +18,7 @@ landcover-cesbio:
     LandCover Tiles from CESBIO 2018,
     derived from Sentinel 2 annual classification
   type: raster
+  resolution: 5.0
   subdir: GLOBAL/CESBIO
   subset: CESBIO
   filename: LANDCOVER_CESBIO_2018.vrt
@@ -32,6 +33,7 @@ landcover-gpk:
     LandCover Tiles from GeoPeka database,
     derived from BD Topo 2019 + RPG 2016
   type: raster
+  resolution: 5.0
   subdir: GLOBAL/GEOPEKA
   subset: GPK
   filename: LANDCOVER_GEOPEKA_2019.vrt
@@ -46,6 +48,7 @@ landcover-bdt:
     LandCover Tiles from BD Topo 2019 + RPG 2016
     (direct rasterization)
   type: raster
+  resolution: 5.0
   subdir: GLOBAL/BDTOPO
   subset: TOTAL_BDT
   filename: LANDCOVER_BDT_2019.vrt
@@ -60,6 +63,7 @@ landcover-hmvt:
     LandCover Tiles from HMVT,
     derived from historcial topographic maps
   type: raster
+  resolution: 1.0
   subdir: GLOBAL/HMVT
   subset: HMVT
   filename: LANDCOVER_HMVT_%(idx)s.vrt
