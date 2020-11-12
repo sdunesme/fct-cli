@@ -229,11 +229,9 @@ def landcover_width(axis, landcoverset):
     method = 'total landcover width'
 
     if config.dataset(landcoverset).properties['multitemporal']:
-        template = config.filename(landcoverset)
-        globexpr = template % {'idx': '*'}
-        reexpr = template % {'idx': '(.*?)_(.*)'}
-        vrts = glob.glob(globexpr)
-        indexes = [re.search(reexpr, t).group(1) for t in vrts]
+        ds = config.dataset(landcoverset)
+        indexes = [d.idx for d in config.datasource(ds.properties['subdatasets_from']).datasources.values()]
+
         subsets = ["%s_%s" % (config.dataset(landcoverset).properties['subset'], idx) for idx in indexes]
 
         for subset, date in zip(subsets, indexes):

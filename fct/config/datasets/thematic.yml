@@ -68,6 +68,7 @@ landcover-hmvt:
   subset: HMVT
   filename: LANDCOVER_HMVT_%(idx)s.vrt
   multitemporal: True
+  subdatasets_from: HMVT
   tiles:
     tileset: landcover
     template: LANDCOVER_HMVT_%(idx)s_%(row)02d_%(col)02d

@@ -132,17 +132,9 @@ def vrt(tileset, dataset, suffix):
     if not config.dataset(dataset).properties['multitemporal']:
         buildvrt(tileset, dataset, suffix)
     else:
+
         ds = config.dataset(dataset)
-        ts = config.tileset(tileset)
-        tilename = ds.tilename()
-        tiledir = os.path.join(os.path.dirname(ts.filename(dataset)), ts.tiledir, '**')
-
-        template = tilename.replace('%(row)02d_%(col)02d', '')
-        globexpr = template % {'idx': '*'}
-        reexpr = template % {'idx': '(.*?)'}
-
-        tiles = glob.glob(os.path.join(tiledir, globexpr)+'*', recursive=True)
-        indexes = list(set([re.search(reexpr, t).group(1) for t in tiles]))
+        indexes = [d.idx for d in config.datasource(ds.properties['subdatasets_from']).datasources.values()]
 
         for idx in indexes:
             buildvrt(tileset, dataset, suffix, idx=idx)

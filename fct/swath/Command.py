@@ -366,12 +366,9 @@ def landcover_swath(axis, landcoverset, processes):
     from .LandCoverSwathProfile import LandCoverSwathProfile
 
     if config.dataset(landcoverset).properties['multitemporal']:
-        template = config.filename(landcoverset)
-        globexpr = template % {'idx': '*'}
-        reexpr = template % {'idx': '(.*?)_(.*)'}
-        vrts = glob.glob(globexpr)
-        indexes = [re.search(reexpr, t).group(1) for t in vrts]
-        subsets = ["%s_%s" % (config.dataset(landcoverset).properties['subset'], idx) for idx in indexes]
+        ds = config.dataset(landcoverset)
+        indexes = [d.idx for d in config.datasource(ds.properties['subdatasets_from']).datasources.values()]
+        subsets = ["%s_%s" % (ds.properties['subset'], idx) for idx in indexes]
 
         for subset, date in zip(subsets, indexes):
             click.echo('Subdataset: %s' % (subset))
@@ -417,12 +414,9 @@ def export_landcover_to_netcdf(axis, landcoverset):
     from .LandCoverSwathProfile import ExportLandcoverSwathsToNetCDF
 
     if config.dataset(landcoverset).properties['multitemporal']:
-        template = config.filename(landcoverset)
-        globexpr = template % {'idx': '*'}
-        reexpr = template % {'idx': '(.*?)_(.*)'}
-        vrts = glob.glob(globexpr)
-        indexes = [re.search(reexpr, t).group(1) for t in vrts]
-        subsets = ["%s_%s" % (config.dataset(landcoverset).properties['subset'], idx) for idx in indexes]
+        ds = config.dataset(landcoverset)
+        indexes = [d.idx for d in config.datasource(ds.properties['subdatasets_from']).datasources.values()]
+        subsets = ["%s_%s" % (ds.properties['subset'], idx) for idx in indexes]
 
         for subset, date in zip(subsets, indexes):
             click.echo('Subdataset: %s' % (subset))
