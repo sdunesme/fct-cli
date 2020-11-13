@@ -22,20 +22,24 @@ import xarray as xr
 from ..config import config
 
 def MergeMultitemporalDataset(axis, landcoverset, input_dataset, output_dataset, **kwargs):
-    template = config.filename(landcoverset)
+
     subset = config.dataset(landcoverset).properties['subset']
+    ds = config.dataset(landcoverset)
+    indexes = [d.idx for d in config.datasource(ds.properties['subdatasets_from']).datasources.values()]
+    
+    template = config.filename(landcoverset)
     globexpr = template % {'idx': '*'}
-    reexpr = template % {'idx': '(.*?)_(.*)'}
     vrts = glob.glob(globexpr)
-    indexes = [re.search(reexpr, t).group(1) for t in vrts]
+
     subsets = ["%s_%s" % (subset, idx) for idx in indexes]
     
     inputs_filenames = [config.filename(input_dataset, axis=axis, subset=s, variant=s) for s in subsets]
     inputs = [xr.open_dataset(f) for f in inputs_filenames]
-    dates = [int(idx) for idx in indexes]
+    dates = [int(idx[-4:]) for idx in indexes]
 
-    dataset = xr.concat(inputs, dim='date')
-    dataset['date'] = dates
+    dataset = xr.concat(inputs, dim='datasource')
+    dataset['datasource'] = indexes
+    dataset['time'] = ('datasource', dates)
 
     # set_metadata(dataset, 'swath_multilandcover')
 
@@ -56,20 +60,20 @@ def RemoveNoData(axis, landcoverset, metrics_dataset, **kwargs):
     with xr.open_dataset(filename) as input_dataset:
         dataset = input_dataset.load()
  
-    with click.progressbar(dataset['date'].data) as iterator:
+    with click.progressbar(dataset['datasource'].data) as iterator:
         for d in iterator:
-            total = sum(dataset.sel(date=d)['buffer_area'].data.flatten())
+            total = sum(dataset.sel(datasource=d)['buffer_area'].data.flatten())
 
             if total==0:
-                dataset = dataset.drop_sel(date=d)
+                dataset = dataset.drop_sel(datasource=d)
 
             else:
                 for m in dataset['measure'].data:
-                    swath_total = sum(dataset.sel(date=d, measure=m)['buffer_area'].data.flatten())
+                    swath_total = sum(dataset.sel(datasource=d, measure=m)['buffer_area'].data.flatten())
 
                     if swath_total==0:
-                        dataset['buffer_area'].loc[dict(date=d, measure=m)] = 'nan'
-                        dataset['buffer_width'].loc[dict(date=d, measure=m)] = 'nan'
+                        dataset['buffer_area'].loc[dict(datasource=d, measure=m)] = 'nan'
+                        dataset['buffer_width'].loc[dict(datasource=d, measure=m)] = 'nan'
     
     dataset.to_netcdf(filename, 'w')
     
