@@ -177,6 +177,7 @@ def ExtractAndPatchTile(
     #     nodata=nodata
     # )
 
+    profile.update(driver='GTiff')
     with rio.open(output, 'w', **profile) as dst:
         dst.write(out, 1)
 
@@ -209,6 +210,7 @@ def MeanFilter(
         out[data == ds.nodata] = ds.nodata
 
         profile = ds.profile.copy()
+        profile.update(driver='GTiff')
 
         with rio.open(output, 'w', **profile) as dst:
             dst.write(data, 1)
